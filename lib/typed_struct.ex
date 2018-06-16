@@ -48,13 +48,21 @@ defmodule TypedStruct do
   ##
 
   @doc false
-  def __field__(mod, name, type, opts) do
+  def __field__(mod, name, type, opts) when is_atom(name) do
+    if mod |> Module.get_attribute(:fields) |> Keyword.has_key?(name) do
+      raise ArgumentError, "the field #{inspect(name)} is already set"
+    end
+
     default = opts[:default]
     enforce? = !!opts[:enforce]
 
     Module.put_attribute(mod, :fields, {name, default})
     Module.put_attribute(mod, :types, {name, type_for(type, enforce?)})
     if enforce?, do: Module.put_attribute(mod, :keys_to_enforce, name)
+  end
+
+  def __field__(_mod, name, _type, _opts) do
+    raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
   end
 
   @doc false
