@@ -1,7 +1,7 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.1.0-dev"
+  @version "0.1.0"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do
@@ -19,6 +19,7 @@ defmodule TypedStruct.MixProject do
       preferred_cli_env: cli_env(),
 
       # Docs
+      name: "TypedStruct",
       docs: [
         main: "TypedStruct",
         source_url: @repo_url,
@@ -27,7 +28,9 @@ defmodule TypedStruct.MixProject do
 
       # Package
       package: package(),
-      description: "Description for TypedStruct."
+      description:
+        "A library for defining structs with a type without writing " <>
+          "boilerplate code."
     ]
   end
 
@@ -44,12 +47,11 @@ defmodule TypedStruct.MixProject do
   defp deps do
     [
       # Development and test dependencies
-      {:credo, "~> 0.9.2", only: [:dev, :test], runtime: false},
+      {:credo, "~> 0.9.3", only: [:dev, :test], runtime: false},
       {:dialyxir, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
       {:mix_test_watch, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_unit_notifier, ">= 0.0.0", only: :test, runtime: false},
-      {:stream_data, "~> 0.4.0", only: :test},
 
       # Project dependencies
 

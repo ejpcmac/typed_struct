@@ -1,26 +1,18 @@
-# The directory Mix will write compiled artifacts to.
+# Application artifacts (Elixir)
 /_build/
-
-# Elixir LS artifacts.
-/.elixir_ls/
-
-# If you run "mix test --cover", coverage assets end up here.
-/cover/
-
-# The directory Mix downloads your dependencies sources to.
 /deps/
+/.fetch
+*.beam
+*.ez
+typed_struct-*.tar
 
-# Where 3rd-party dependencies like ExDoc output generated docs.
+# Test coverage and documentation
+/cover/
 /doc/
 
-# Ignore .fetch files in case you like to edit your project deps locally.
-/.fetch
+# Editor artifacts
+/.elixir_ls/
+/.history/
 
-# If the VM crashes, it generates a dump, let's ignore it too.
+# Crash dumps
 erl_crash.dump
-
-# Also ignore archive artifacts (built via "mix archive.build").
-*.ez
-
-# Ignore package tarball (built via "mix hex.build").
-typed_struct-*.tar
