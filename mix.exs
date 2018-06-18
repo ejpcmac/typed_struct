@@ -45,7 +45,7 @@ defmodule TypedStruct.MixProject do
   defp deps do
     [
       # Development and test dependencies
-      {:credo, "~> 0.9.2", only: [:dev, :test], runtime: false},
+      {:credo, "~> 0.9.3", only: [:dev, :test], runtime: false},
       {:dialyxir, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
       {:mix_test_watch, ">= 0.0.0", only: :dev, runtime: false},
