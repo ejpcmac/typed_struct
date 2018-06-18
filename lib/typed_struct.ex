@@ -26,6 +26,10 @@ defmodule TypedStruct do
       defstruct @fields
 
       TypedStruct.__type__(@types)
+
+      def __keys__, do: @fields |> Keyword.keys() |> Enum.reverse()
+      def __defaults__, do: Enum.reverse(@fields)
+      def __types__, do: Enum.reverse(@types)
     end
   end
 
