@@ -19,6 +19,7 @@ defmodule TypedStruct.MixProject do
       preferred_cli_env: cli_env(),
 
       # Docs
+      name: "TypedStruct",
       docs: [
         main: "TypedStruct",
         source_url: @repo_url,
