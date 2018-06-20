@@ -81,7 +81,7 @@ Thanks to TypedStruct, this is now possible :)
 To use TypedStruct in your project, add this to you Mix dependencies:
 
 ```elixir
-{:typed_struct, "~> 0.1.0", runtime: false}
+{:typed_struct, "~> 0.1.1", runtime: false}
 ```
 
 If you want to avoid `mix format` putting parentheses on field definitions,
