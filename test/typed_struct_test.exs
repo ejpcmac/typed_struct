@@ -42,7 +42,7 @@ defmodule TypedStructTest do
         @type t() :: %__MODULE__{
                 int: integer() | nil,
                 string: String.t() | nil,
-                string_with_default: String.t() | nil,
+                string_with_default: String.t(),
                 mandatory_int: integer()
               }
       end
@@ -79,7 +79,7 @@ defmodule TypedStructTest do
         [
           int: integer() | nil,
           string: String.t() | nil,
-          string_with_default: String.t() | nil,
+          string_with_default: String.t(),
           mandatory_int: integer()
         ]
       end
