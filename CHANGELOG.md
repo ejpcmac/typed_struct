@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.1.1-dev
+## v0.1.1
 
 * Do not make the type nullable when there is a default value
 
