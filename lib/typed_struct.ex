@@ -28,7 +28,7 @@ defmodule TypedStruct do
         @type t() :: %__MODULE__{
                 name: String.t(),
                 age: non_neg_integer() | nil,
-                happy?: boolean() | nil,
+                happy?: boolean(),
                 phone: String.t() | nil
               }
       end
@@ -37,7 +37,8 @@ defmodule TypedStruct do
 
     * the keys are present in both the `defstruct` and type definition,
     * enforced keys must also be written in `@enforce_keys`,
-    * if a key is not enforced, the type should be nullable.
+    * if a key has no default value and is not enforced, its type should be
+      nullable.
 
   If you want to add a field in the struct, you must therefore:
 
@@ -154,7 +155,7 @@ defmodule TypedStruct do
             [line: 5], []},
           nil
         ]},
-        with_default: {:|, [], [{:integer, [line: 6], []}, nil]}
+        with_default: {:integer, [line: 6], []}
       ]
 
   ## What do I get?
@@ -209,29 +210,22 @@ defmodule TypedStruct do
       # Becomes
       defstruct name: "John Smith"
 
-  The type itself remains the same.
+  When set to `true`, the `enforce` option enforces the key by adding it to the
+  `@enforce_keys` attribute.
 
-  The `enforce` option, when set to `true`, enforces the key. Therefore, the
-  type is not nullable anymore:
+      field :name, String.t(), enforce: true
 
-      defmodule Example do
-        use TypedStruct
+      # Becomes
+      @enforce_keys [:name]
+      defstruct name: nil
 
-        typedstruct do
-          field :name, String.t(), enforce: true
-        end
-      end
+  In both cases, the type has no reason to be nullable anymore by default. In one
+  case the field is filled with its default value and not `nil`, and in the other
+  case it is enforced. Both options would generate the following type:
 
-  becomes:
-
-      defmodule Example do
-        @enforce_keys [:name] # :name is enforced
-        defstruct name: nil
-
-        @type t() :: %__MODULE__{
-                name: String.t() # Not nullable
-              }
-      end
+      @type t() :: %__MODULE__{
+            name: String.t() # Not nullable
+          }
   """
 
   @doc false
@@ -304,9 +298,10 @@ defmodule TypedStruct do
 
     default = opts[:default]
     enforce? = !!opts[:enforce]
+    nullable? = !default && !enforce?
 
     Module.put_attribute(mod, :fields, {name, default})
-    Module.put_attribute(mod, :types, {name, type_for(type, enforce?)})
+    Module.put_attribute(mod, :types, {name, type_for(type, nullable?)})
     if enforce?, do: Module.put_attribute(mod, :keys_to_enforce, name)
   end
 
@@ -326,6 +321,6 @@ defmodule TypedStruct do
   ##
 
   # Makes the type nullable if the key is not enforced.
-  defp type_for(type, true), do: type
+  defp type_for(type, false), do: type
   defp type_for(type, _), do: quote(do: unquote(type) | nil)
 end
