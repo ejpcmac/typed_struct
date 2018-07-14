@@ -118,11 +118,27 @@ defmodule TypedStructTest do
   ## Helpers
   ##
 
+  @elixir_version System.version() |> Version.parse!()
+  @min_version Version.parse!("1.7.0-rc")
+
   # Extracts the first type from a module.
-  defp extract_first_type(bytecode) do
-    bytecode
-    |> Kernel.Typespec.beam_types()
-    |> Keyword.get(:type)
+  # NOTE: We define the function differently depending on the Elixir version to
+  # avoid compiler warnings.
+  if Version.compare(@elixir_version, @min_version) == :lt do
+    # API for Elixir 1.6 (TODO: Remove when 1.6 compatibility is dropped.)
+    defp extract_first_type(bytecode) do
+      bytecode
+      |> Kernel.Typespec.beam_types()
+      |> Keyword.get(:type)
+    end
+  else
+    # API for Elixir 1.7
+    defp extract_first_type(bytecode) do
+      case Code.Typespec.fetch_types(bytecode) do
+        {:ok, types} -> Keyword.get(types, :type)
+        _ -> nil
+      end
+    end
   end
 
   # Standardises a type (removes line numbers and renames the struct).
