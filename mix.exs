@@ -84,7 +84,6 @@ defmodule TypedStruct.MixProject do
 
   defp package do
     [
-      maintainers: ["Jean-Philippe Cugnet"],
       licenses: ["MIT"],
       links: %{"GitHub" => @repo_url}
     ]
