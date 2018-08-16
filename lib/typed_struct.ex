@@ -75,7 +75,7 @@ defmodule TypedStruct do
 
   To use TypedStruct in your project, add this to you Mix dependencies:
 
-      {:typed_struct, "~> #{Mix.Project.config()[:version]}", runtime: false}
+      {:typed_struct, "~> #{Mix.Project.config()[:version]}"}
 
   If you want to avoid `mix format` putting parentheses on field definitions,
   you can write in your `.formatter.exs`:
