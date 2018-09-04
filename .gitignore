@@ -1,18 +1,37 @@
-# Application artifacts (Elixir)
+##
+## Application artifacts
+##
+
+# direnv cache for Nix shells
+/.direnv/
+
+# Elixir build directory
 /_build/
+
+# Elixir dependencies
 /deps/
 /.fetch
+
+# Elixir binary files
 *.beam
 *.ez
-typed_struct-*.tar
+/typed_struct-*.tar
+/typed_struct
 
 # Test coverage and documentation
 /cover/
 /doc/
 
-# Editor artifacts
+##
+## Editor artifacts
+##
+
 /.elixir_ls/
 /.history/
 
-# Crash dumps
+##
+## Crash dumps
+##
+
+# Erang VM
 erl_crash.dump
