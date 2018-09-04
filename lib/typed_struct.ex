@@ -77,6 +77,10 @@ defmodule TypedStruct do
 
       {:typed_struct, "~> #{Mix.Project.config()[:version]}"}
 
+  If you do not plan to compile modules using TypedStruct at runtime, you can
+  add `runtime: false` to the dependency tuple as TypedStruct is only used
+  during compilation.
+
   If you want to avoid `mix format` putting parentheses on field definitions,
   you can write in your `.formatter.exs`:
 
@@ -219,9 +223,9 @@ defmodule TypedStruct do
       @enforce_keys [:name]
       defstruct name: nil
 
-  In both cases, the type has no reason to be nullable anymore by default. In one
-  case the field is filled with its default value and not `nil`, and in the other
-  case it is enforced. Both options would generate the following type:
+  In both cases, the type has no reason to be nullable anymore by default. In
+  one case the field is filled with its default value and not `nil`, and in the
+  other case it is enforced. Both options would generate the following type:
 
       @type t() :: %__MODULE__{
             name: String.t() # Not nullable

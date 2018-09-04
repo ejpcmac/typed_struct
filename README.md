@@ -84,6 +84,10 @@ To use TypedStruct in your project, add this to you Mix dependencies:
 {:typed_struct, "~> 0.1.1"}
 ```
 
+If you do not plan to compile modules using TypedStruct at runtime, you can add
+`runtime: false` to the dependency tuple as TypedStruct is only used during
+compilation.
+
 If you want to avoid `mix format` putting parentheses on field definitions,
 you can write in your `.formatter.exs`:
 
