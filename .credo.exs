@@ -21,8 +21,8 @@
         # You can give explicit globs or simply directories.
         # In the latter case `**/*.{ex,exs}` will be used.
         #
-        included: ["lib/", "test/"],
-        excluded: [~r"/_build/", ~r"/deps/"]
+        included: ["lib/", "src/", "test/", "web/", "apps/"],
+        excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/"]
       },
       #
       # If you create your own checks, you must specify the source files for
@@ -72,7 +72,6 @@
         # set the `excluded_macros` parameter to `[:schema, :setup, :test]`.
         #
         {Credo.Check.Design.DuplicatedCode, excluded_macros: []},
-
         # You can also customize the exit_status of each check.
         # If you don't want TODO comments to cause `mix credo` to fail, just
         # set this value to 0 (zero).
@@ -83,6 +82,7 @@
         #
         ## Readability Checks
         #
+        {Credo.Check.Readability.AliasOrder},
         {Credo.Check.Readability.FunctionNames},
         {Credo.Check.Readability.LargeNumbers},
         {Credo.Check.Readability.MaxLineLength, priority: :low, max_length: 80},
@@ -109,6 +109,7 @@
         {Credo.Check.Refactor.CyclomaticComplexity},
         {Credo.Check.Refactor.FunctionArity},
         {Credo.Check.Refactor.LongQuoteBlocks},
+        {Credo.Check.Refactor.MapInto},
         {Credo.Check.Refactor.MatchInCondition},
         {Credo.Check.Refactor.NegatedConditionsInUnless},
         {Credo.Check.Refactor.NegatedConditionsWithElse},

@@ -47,7 +47,7 @@ defmodule TypedStruct.MixProject do
   defp deps do
     [
       # Development and test dependencies
-      {:credo, "~> 0.9.3", only: :dev, runtime: false},
+      {:credo, "~> 0.10.0", only: :dev, runtime: false},
       {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
       {:mix_test_watch, ">= 0.0.0", only: :dev, runtime: false},
@@ -56,7 +56,7 @@ defmodule TypedStruct.MixProject do
       # Project dependencies
 
       # Documentation dependencies
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
 
