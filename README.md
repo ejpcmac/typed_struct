@@ -78,17 +78,22 @@ Thanks to TypedStruct, this is now possible :)
 
 ### Setup
 
-To use TypedStruct in your project, add this to you Mix dependencies:
+To use TypedStruct in your project, add this to your Mix dependencies:
 
 ```elixir
-{:typed_struct, "~> 0.1.1", runtime: false}
+{:typed_struct, "~> 0.1.2"}
 ```
 
+If you do not plan to compile modules using TypedStruct at runtime, you can add
+`runtime: false` to the dependency tuple as TypedStruct is only used during
+compilation.
+
 If you want to avoid `mix format` putting parentheses on field definitions,
-you can write in your `.formatter.exs`:
+you can add to your `.formatter.exs`:
 
 ```elixir
 [
+  ...,
   import_deps: [:typed_struct]
 ]
 ```
@@ -100,24 +105,44 @@ To define a typed struct, use `TypedStruct`, then define your struct within a
 
 ```elixir
 defmodule MyStruct do
-  # Use TypedStruct to import the typedstruct macro
+  # Use TypedStruct to import the typedstruct macro.
   use TypedStruct
 
-  # Define your struct
+  # Define your struct.
   typedstruct do
-    # Define each field with the field macro
+    # Define each field with the field macro.
     field :a_string, String.t()
 
-    # You can set a default value
+    # You can set a default value.
     field :string_with_default, String.t(), default: "default"
 
-    # You can enforce a field
+    # You can enforce a field.
     field :enforced_field, integer(), enforce: true
   end
 end
 ```
 
 Each field is defined through the `field/2` macro.
+
+If you want to enforce all the keys by default, you can do:
+
+```elixir
+defmodule MyStruct do
+  use TypedStruct
+
+  # Enforce keys by default.
+  typedstruct enforce: true do
+    # This key is enforced.
+    field :enforced_by_default, term()
+
+    # You can override the default behaviour.
+    field :not_enforced, term(), enforce: false
+
+    # A key with a default value is not enforced.
+    field :not_enforced_either, integer(), default: 1
+  end
+end
+```
 
 ### Documentation
 

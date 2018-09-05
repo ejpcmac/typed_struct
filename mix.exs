@@ -1,7 +1,7 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.1.2"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do
@@ -35,9 +35,7 @@ defmodule TypedStruct.MixProject do
   end
 
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    [extra_applications: []]
   end
 
   # Specifies which paths to compile per environment.
@@ -47,8 +45,8 @@ defmodule TypedStruct.MixProject do
   defp deps do
     [
       # Development and test dependencies
-      {:credo, "~> 0.9.3", only: [:dev, :test], runtime: false},
-      {:dialyxir, ">= 0.0.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 0.10.0", only: :dev, runtime: false},
+      {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
       {:mix_test_watch, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_unit_notifier, ">= 0.0.0", only: :test, runtime: false},
@@ -56,7 +54,7 @@ defmodule TypedStruct.MixProject do
       # Project dependencies
 
       # Documentation dependencies
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
 
@@ -84,7 +82,6 @@ defmodule TypedStruct.MixProject do
 
   defp package do
     [
-      maintainers: ["Jean-Philippe Cugnet"],
       licenses: ["MIT"],
       links: %{"GitHub" => @repo_url}
     ]

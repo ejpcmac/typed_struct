@@ -16,6 +16,18 @@ defmodule TypedStructTest do
       def enforce_keys, do: @enforce_keys
     end
 
+  defmodule EnforcedTypedStruct do
+    use TypedStruct
+
+    typedstruct enforce: true do
+      field :enforced_by_default, term()
+      field :not_enforced, term(), enforce: false
+      field :with_default, integer(), default: 1
+    end
+
+    def enforce_keys, do: @enforce_keys
+  end
+
   @bytecode bytecode
 
   ## Standard cases
@@ -31,6 +43,18 @@ defmodule TypedStructTest do
 
   test "enforces keys for fields with `enforce: true`" do
     assert TestStruct.enforce_keys() == [:mandatory_int]
+  end
+
+  test "enforces keys by default if `enforce: true` is set at top-level" do
+    assert :enforced_by_default in EnforcedTypedStruct.enforce_keys()
+  end
+
+  test "does not enforce keys for fields explicitely setting `enforce: false" do
+    refute :not_enforced in EnforcedTypedStruct.enforce_keys()
+  end
+
+  test "does not enforce keys for fields with a default value" do
+    refute :with_default in EnforcedTypedStruct.enforce_keys()
   end
 
   test "generates a type for the struct" do
@@ -118,11 +142,27 @@ defmodule TypedStructTest do
   ## Helpers
   ##
 
+  @elixir_version System.version() |> Version.parse!()
+  @min_version Version.parse!("1.7.0-rc")
+
   # Extracts the first type from a module.
-  defp extract_first_type(bytecode) do
-    bytecode
-    |> Kernel.Typespec.beam_types()
-    |> Keyword.get(:type)
+  # NOTE: We define the function differently depending on the Elixir version to
+  # avoid compiler warnings.
+  if Version.compare(@elixir_version, @min_version) == :lt do
+    # API for Elixir 1.6 (TODO: Remove when 1.6 compatibility is dropped.)
+    defp extract_first_type(bytecode) do
+      bytecode
+      |> Kernel.Typespec.beam_types()
+      |> Keyword.get(:type)
+    end
+  else
+    # API for Elixir 1.7
+    defp extract_first_type(bytecode) do
+      case Code.Typespec.fetch_types(bytecode) do
+        {:ok, types} -> Keyword.get(types, :type)
+        _ -> nil
+      end
+    end
   end
 
   # Standardises a type (removes line numbers and renames the struct).

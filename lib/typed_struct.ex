@@ -73,14 +73,19 @@ defmodule TypedStruct do
 
   ### Setup
 
-  To use TypedStruct in your project, add this to you Mix dependencies:
+  To use TypedStruct in your project, add this to your Mix dependencies:
 
-      {:typed_struct, "~> #{Mix.Project.config()[:version]}", runtime: false}
+      {:typed_struct, "~> #{Mix.Project.config()[:version]}"}
+
+  If you do not plan to compile modules using TypedStruct at runtime, you can
+  add `runtime: false` to the dependency tuple as TypedStruct is only used
+  during compilation.
 
   If you want to avoid `mix format` putting parentheses on field definitions,
-  you can write in your `.formatter.exs`:
+  you can add to your `.formatter.exs`:
 
       [
+        ...,
         import_deps: [:typed_struct]
       ]
 
@@ -90,23 +95,41 @@ defmodule TypedStruct do
   `typedstruct` block:
 
       defmodule MyStruct do
-        # Use TypedStruct to import the typedstruct macro
+        # Use TypedStruct to import the typedstruct macro.
         use TypedStruct
 
-        # Define your struct
+        # Define your struct.
         typedstruct do
-          # Define each field with the field macro
+          # Define each field with the field macro.
           field :a_string, String.t()
 
-          # You can set a default value
+          # You can set a default value.
           field :string_with_default, String.t(), default: "default"
 
-          # You can enforce a field
+          # You can enforce a field.
           field :enforced_field, integer(), enforce: true
         end
       end
 
   Each field is defined through the `field/2` macro.
+
+  If you want to enforce all the keys by default, you can do:
+
+      defmodule MyStruct do
+        use TypedStruct
+
+        # Enforce keys by default.
+        typedstruct enforce: true do
+          # This key is enforced.
+          field :enforced_by_default, term()
+
+          # You can override the default behaviour.
+          field :not_enforced, term(), enforce: false
+
+          # A key with a default value is not enforced.
+          field :not_enforced_either, integer(), default: 1
+        end
+      end
 
   ### Documentation
 
@@ -219,9 +242,9 @@ defmodule TypedStruct do
       @enforce_keys [:name]
       defstruct name: nil
 
-  In both cases, the type has no reason to be nullable anymore by default. In one
-  case the field is filled with its default value and not `nil`, and in the other
-  case it is enforced. Both options would generate the following type:
+  In both cases, the type has no reason to be nullable anymore by default. In
+  one case the field is filled with its default value and not `nil`, and in the
+  other case it is enforced. Both options would generate the following type:
 
       @type t() :: %__MODULE__{
             name: String.t() # Not nullable
@@ -231,7 +254,7 @@ defmodule TypedStruct do
   @doc false
   defmacro __using__(_) do
     quote do
-      import TypedStruct, only: [typedstruct: 1]
+      import TypedStruct, only: [typedstruct: 1, typedstruct: 2]
     end
   end
 
@@ -240,12 +263,45 @@ defmodule TypedStruct do
 
   Inside a `typedstruct` block, each field is defined through the `field/2`
   macro.
+
+  ## Options
+
+    * `enforce` - if set to true, sets `enforce: true` to all fields by default.
+      This can be overridden by setting `enforce: false` or a default value on
+      individual fields.
+
+  ## Examples
+
+      defmodule MyStruct do
+        use TypedStruct
+
+        typedstruct do
+          field :field_one, String.t()
+          field :field_two, integer(), enforce: true
+          field :field_three, boolean(), enforce: true
+          field :field_four, atom(), default: :hey
+        end
+      end
+
+  This is the same as writing:
+
+      defmodule MyStruct do
+        use TypedStruct
+
+        typedstruct enforce: true do
+          field :field_one, String.t(), enforce: false
+          field :field_two, integer()
+          field :field_three, boolean()
+          field :field_four, atom(), default: :hey
+        end
+      end
   """
-  defmacro typedstruct(do: block) do
+  defmacro typedstruct(opts \\ [], do: block) do
     quote do
       Module.register_attribute(__MODULE__, :fields, accumulate: true)
       Module.register_attribute(__MODULE__, :types, accumulate: true)
       Module.register_attribute(__MODULE__, :keys_to_enforce, accumulate: true)
+      Module.put_attribute(__MODULE__, :enforce?, unquote(!!opts[:enforce]))
 
       import TypedStruct
       unquote(block)
@@ -297,7 +353,12 @@ defmodule TypedStruct do
     end
 
     default = opts[:default]
-    enforce? = !!opts[:enforce]
+
+    enforce? =
+      if is_nil(opts[:enforce]),
+        do: Module.get_attribute(mod, :enforce?) && !default,
+        else: !!opts[:enforce]
+
     nullable? = !default && !enforce?
 
     Module.put_attribute(mod, :fields, {name, default})
