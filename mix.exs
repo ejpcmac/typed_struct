@@ -35,9 +35,7 @@ defmodule TypedStruct.MixProject do
   end
 
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    [extra_applications: []]
   end
 
   # Specifies which paths to compile per environment.
