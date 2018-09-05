@@ -1,7 +1,7 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.1.3-dev"
+  @version "0.1.3"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do

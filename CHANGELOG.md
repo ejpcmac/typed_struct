@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.3
+
+* Fix a bug where fields with `default: false` where still enforced when setting
+    `enforce: true` at top-level
+
 ## v0.1.2
 
 * Add the ability to enforce keys by default (#6)
