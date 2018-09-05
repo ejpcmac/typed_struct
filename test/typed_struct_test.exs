@@ -16,6 +16,18 @@ defmodule TypedStructTest do
       def enforce_keys, do: @enforce_keys
     end
 
+  defmodule EnforcedTypedStruct do
+    use TypedStruct
+
+    typedstruct enforce: true do
+      field :enforced_by_default, term()
+      field :not_enforced, term(), enforce: false
+      field :with_default, integer(), default: 1
+    end
+
+    def enforce_keys, do: @enforce_keys
+  end
+
   @bytecode bytecode
 
   ## Standard cases
@@ -31,6 +43,18 @@ defmodule TypedStructTest do
 
   test "enforces keys for fields with `enforce: true`" do
     assert TestStruct.enforce_keys() == [:mandatory_int]
+  end
+
+  test "enforces keys by default if `enforce: true` is set at top-level" do
+    assert :enforced_by_default in EnforcedTypedStruct.enforce_keys()
+  end
+
+  test "does not enforce keys for fields explicitely setting `enforce: false" do
+    refute :not_enforced in EnforcedTypedStruct.enforce_keys()
+  end
+
+  test "does not enforce keys for fields with a default value" do
+    refute :with_default in EnforcedTypedStruct.enforce_keys()
   end
 
   test "generates a type for the struct" do

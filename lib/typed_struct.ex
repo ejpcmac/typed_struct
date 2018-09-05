@@ -112,6 +112,24 @@ defmodule TypedStruct do
 
   Each field is defined through the `field/2` macro.
 
+  If you want to enforce all the keys by default, you can do:
+
+      defmodule MyStruct do
+        use TypedStruct
+
+        # Enforce keys by default.
+        typedstruct enforce: true do
+          # This key is enforced.
+          field :enforced_by_default, term()
+
+          # You can override the default behaviour.
+          field :not_enforced, term(), enforce: false
+
+          # A key with a default value is not enforced.
+          field :not_enforced_either, integer(), default: 1
+        end
+      end
+
   ### Documentation
 
   To add a `@typedoc` to the struct type, just add the attribute above the
@@ -235,7 +253,7 @@ defmodule TypedStruct do
   @doc false
   defmacro __using__(_) do
     quote do
-      import TypedStruct, only: [typedstruct: 1]
+      import TypedStruct, only: [typedstruct: 1, typedstruct: 2]
     end
   end
 
@@ -244,12 +262,45 @@ defmodule TypedStruct do
 
   Inside a `typedstruct` block, each field is defined through the `field/2`
   macro.
+
+  ## Options
+
+    * `enforce` - if set to true, sets `enforce: true` to all fields by default.
+      This can be overridden by setting `enforce: false` or a default value on
+      individual fields.
+
+  ## Examples
+
+      defmodule MyStruct do
+        use TypedStruct
+
+        typedstruct do
+          field :field_one, String.t()
+          field :field_two, integer(), enforce: true
+          field :field_three, boolean(), enforce: true
+          field :field_four, atom(), default: :hey
+        end
+      end
+
+  This is the same as writing:
+
+      defmodule MyStruct do
+        use TypedStruct
+
+        typedstruct enforce: true do
+          field :field_one, String.t(), enforce: false
+          field :field_two, integer()
+          field :field_three, boolean()
+          field :field_four, atom(), default: :hey
+        end
+      end
   """
-  defmacro typedstruct(do: block) do
+  defmacro typedstruct(opts \\ [], do: block) do
     quote do
       Module.register_attribute(__MODULE__, :fields, accumulate: true)
       Module.register_attribute(__MODULE__, :types, accumulate: true)
       Module.register_attribute(__MODULE__, :keys_to_enforce, accumulate: true)
+      Module.put_attribute(__MODULE__, :enforce?, unquote(!!opts[:enforce]))
 
       import TypedStruct
       unquote(block)
@@ -301,7 +352,12 @@ defmodule TypedStruct do
     end
 
     default = opts[:default]
-    enforce? = !!opts[:enforce]
+
+    enforce? =
+      if is_nil(opts[:enforce]),
+        do: Module.get_attribute(mod, :enforce?) && !default,
+        else: !!opts[:enforce]
+
     nullable? = !default && !enforce?
 
     Module.put_attribute(mod, :fields, {name, default})

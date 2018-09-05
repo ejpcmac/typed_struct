@@ -123,6 +123,26 @@ end
 
 Each field is defined through the `field/2` macro.
 
+If you want to enforce all the keys by default, you can do:
+
+```elixir
+defmodule MyStruct do
+  use TypedStruct
+
+  # Enforce keys by default.
+  typedstruct enforce: true do
+    # This key is enforced.
+    field :enforced_by_default, term()
+
+    # You can override the default behaviour.
+    field :not_enforced, term(), enforce: false
+
+    # A key with a default value is not enforced.
+    field :not_enforced_either, integer(), default: 1
+  end
+end
+```
+
 ### Documentation
 
 To add a `@typedoc` to the struct type, just add the attribute above the
