@@ -356,7 +356,7 @@ defmodule TypedStruct do
 
     enforce? =
       if is_nil(opts[:enforce]),
-        do: Module.get_attribute(mod, :enforce?) && !default,
+        do: Module.get_attribute(mod, :enforce?) && is_nil(default),
         else: !!opts[:enforce]
 
     nullable? = !default && !enforce?
