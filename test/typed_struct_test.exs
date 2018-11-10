@@ -16,6 +16,15 @@ defmodule TypedStructTest do
       def enforce_keys, do: @enforce_keys
     end
 
+  {:module, _name, bytecode_opaque, _exports} =
+    defmodule OpaqueTestStruct do
+      use TypedStruct
+
+      typedstruct opaque: true do
+        field :int, integer()
+      end
+    end
+
   defmodule EnforcedTypedStruct do
     use TypedStruct
 
@@ -30,6 +39,7 @@ defmodule TypedStructTest do
   end
 
   @bytecode bytecode
+  @bytecode_opaque bytecode_opaque
   # standard struct name used when comparing generated types
   @standard_struct_name TypedStructTest.TestStruct
 
@@ -86,6 +96,32 @@ defmodule TypedStructTest do
       bytecode2
       |> extract_first_type()
       |> standardise(TypedStructTest.TestStruct2)
+
+    assert type1 == type2
+  end
+
+  test "generates an type for the struct if `opaque: true` is set" do
+    # Define a second struct with the type expected for TestStruct.
+    {:module, _name, bytecode_expected, _exports} =
+      defmodule TestStruct3 do
+        defstruct [:int]
+
+        @opaque t() :: %__MODULE__{
+                  int: integer() | nil
+                }
+      end
+
+    # Get both types and standardise them (remove line numbers and rename
+    # the second struct with the name of the first one).
+    type1 =
+      @bytecode_opaque
+      |> extract_first_type(:opaque)
+      |> standardise(TypedStructTest.OpaqueTestStruct)
+
+    type2 =
+      bytecode_expected
+      |> extract_first_type(:opaque)
+      |> standardise(TypedStructTest.TestStruct3)
 
     assert type1 == type2
   end
@@ -161,16 +197,16 @@ defmodule TypedStructTest do
   # avoid compiler warnings.
   if Version.compare(@elixir_version, @min_version) == :lt do
     # API for Elixir 1.6 (TODO: Remove when 1.6 compatibility is dropped.)
-    defp extract_first_type(bytecode) do
+    defp extract_first_type(bytecode, type_keyword \\ :type) do
       bytecode
       |> Kernel.Typespec.beam_types()
-      |> Keyword.get(:type)
+      |> Keyword.get(type_keyword)
     end
   else
     # API for Elixir 1.7
-    defp extract_first_type(bytecode) do
+    defp extract_first_type(bytecode, type_keyword \\ :type) do
       case Code.Typespec.fetch_types(bytecode) do
-        {:ok, types} -> Keyword.get(types, :type)
+        {:ok, types} -> Keyword.get(types, type_keyword)
         _ -> nil
       end
     end
