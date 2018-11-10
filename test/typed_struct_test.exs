@@ -30,6 +30,8 @@ defmodule TypedStructTest do
   end
 
   @bytecode bytecode
+  # standard struct name used when comparing generated types
+  @standard_struct_name TypedStructTest.TestStruct
 
   ## Standard cases
 
@@ -79,7 +81,11 @@ defmodule TypedStructTest do
     # Get both types and standardise them (remove line numbers and rename
     # the second struct with the name of the first one).
     type1 = @bytecode |> extract_first_type() |> standardise()
-    type2 = bytecode2 |> extract_first_type() |> standardise()
+
+    type2 =
+      bytecode2
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStruct2)
 
     assert type1 == type2
   end
@@ -170,24 +176,27 @@ defmodule TypedStructTest do
     end
   end
 
-  # Standardises a type (removes line numbers and renames the struct).
-  defp standardise({name, type, params}) when is_tuple(type),
-    do: {name, standardise(type), params}
+  # Standardises a type (removes line numbers and renames the struct
+  # to the standard struct name).
+  defp standardise(type_info, struct \\ @standard_struct_name)
 
-  defp standardise({:type, _, type, params}),
-    do: {:type, :line, type, standardise(params)}
+  defp standardise({name, type, params}, struct) when is_tuple(type),
+    do: {name, standardise(type, struct), params}
 
-  defp standardise({:remote_type, _, params}),
-    do: {:remote_type, :line, standardise(params)}
+  defp standardise({:type, _, type, params}, struct),
+    do: {:type, :line, type, standardise(params, struct)}
 
-  defp standardise({:atom, _, TypedStructTest.TestStruct2}),
-    do: {:atom, :line, TypedStructTest.TestStruct}
+  defp standardise({:remote_type, _, params}, struct),
+    do: {:remote_type, :line, standardise(params, struct)}
 
-  defp standardise({type, _, litteral}),
+  defp standardise({:atom, _, struct}, struct),
+    do: {:atom, :line, @standard_struct_name}
+
+  defp standardise({type, _, litteral}, _struct),
     do: {type, :line, litteral}
 
-  defp standardise(list) when is_list(list),
-    do: Enum.map(list, &standardise/1)
+  defp standardise(list, struct) when is_list(list),
+    do: Enum.map(list, &standardise(&1, struct))
 
   # Deletes the context from a quoted expression.
   defp delete_context(list) when is_list(list),
