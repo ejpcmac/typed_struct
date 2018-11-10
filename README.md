@@ -144,6 +144,20 @@ defmodule MyStruct do
 end
 ```
 
+You can also generate an opaque type for the struct by specyfing
+`opaque: true`:
+
+```elixir
+defmodule MyOpaqueStruct do
+  use TypedStruct
+
+  # Generate an opaque type for the struct
+  typedstruct opaque: true do
+    field :name, String.t
+  end
+end
+```
+
 ### Documentation
 
 To add a `@typedoc` to the struct type, just add the attribute above the
@@ -280,6 +294,26 @@ case it is enforced. Both options would generate the following type:
         name: String.t() # Not nullable
       }
 ```
+
+Passing `opaque: true` replaces `@type` with `@opaque` in the struct
+type specification:
+
+```elixir
+defmodule Example do
+  use TypedStruct
+
+  typedstruct opaque: true do
+    field :name, String.t()
+  end
+end
+
+# Becomes
+
+@opaque t() :: %__MODULE__{
+          name: String.t()
+        }
+```
+
 
 ## [Contributing](CONTRIBUTING.md)
 
