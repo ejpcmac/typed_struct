@@ -1,13 +1,13 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.1.3"
+  @version "0.1.4"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do
     [
       app: :typed_struct,
-      version: @version,
+      version: @version <> dev(),
       elixir: "~> 1.6",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -85,5 +85,18 @@ defmodule TypedStruct.MixProject do
       licenses: ["MIT"],
       links: %{"GitHub" => @repo_url}
     ]
+  end
+
+  # Helper to add a development revision to the version. Do NOT make a call to
+  # Git this way in a production release!!
+  def dev do
+    with {rev, 0} <-
+           System.cmd("git", ["rev-parse", "--short", "HEAD"],
+             stderr_to_stdout: true
+           ) do
+      "-dev+" <> String.trim(rev)
+    else
+      _ -> "-dev"
+    end
   end
 end
