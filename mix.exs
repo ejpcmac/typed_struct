@@ -48,13 +48,13 @@ defmodule TypedStruct.MixProject do
       {:credo, "~> 0.10.0", only: :dev, runtime: false},
       {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
-      {:mix_test_watch, ">= 0.0.0", only: :dev, runtime: false},
+      {:mix_test_watch, ">= 0.0.0", only: :test, runtime: false},
       {:ex_unit_notifier, ">= 0.0.0", only: :test, runtime: false},
 
       # Project dependencies
 
       # Documentation dependencies
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.19", only: :docs, runtime: false}
     ]
   end
 
@@ -83,10 +83,16 @@ defmodule TypedStruct.MixProject do
 
   defp cli_env do
     [
-      # Always run coveralls mix tasks in `:test` env.
+      # Run mix test.watch in `:test` env.
+      "test.watch": :test,
+
+      # Always run Coveralls Mix tasks in `:test` env.
       coveralls: :test,
       "coveralls.detail": :test,
-      "coveralls.html": :test
+      "coveralls.html": :test,
+
+      # Use a custom env for docs.
+      docs: :docs
     ]
   end
 
