@@ -40,7 +40,8 @@ defmodule TypedStructTest do
 
   @bytecode bytecode
   @bytecode_opaque bytecode_opaque
-  # standard struct name used when comparing generated types
+
+  # Standard struct name used when comparing generated types.
   @standard_struct_name TypedStructTest.TestStruct
 
   ## Standard cases
@@ -100,7 +101,7 @@ defmodule TypedStructTest do
     assert type1 == type2
   end
 
-  test "generates an type for the struct if `opaque: true` is set" do
+  test "generates an opaque type if `opaque: true` is set" do
     # Define a second struct with the type expected for TestStruct.
     {:module, _name, bytecode_expected, _exports} =
       defmodule TestStruct3 do
@@ -212,8 +213,8 @@ defmodule TypedStructTest do
     end
   end
 
-  # Standardises a type (removes line numbers and renames the struct
-  # to the standard struct name).
+  # Standardises a type (removes line numbers and renames the struct to the
+  # standard struct name).
   defp standardise(type_info, struct \\ @standard_struct_name)
 
   defp standardise({name, type, params}, struct) when is_tuple(type),

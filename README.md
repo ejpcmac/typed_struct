@@ -145,16 +145,15 @@ defmodule MyStruct do
 end
 ```
 
-You can also generate an opaque type for the struct by specyfing
-`opaque: true`:
+You can also generate an opaque type for the struct:
 
 ```elixir
 defmodule MyOpaqueStruct do
   use TypedStruct
 
-  # Generate an opaque type for the struct
+  # Generate an opaque type for the struct.
   typedstruct opaque: true do
-    field :name, String.t
+    field :name, String.t()
   end
 end
 ```
@@ -296,16 +295,12 @@ case it is enforced. Both options would generate the following type:
       }
 ```
 
-Passing `opaque: true` replaces `@type` with `@opaque` in the struct
-type specification:
+Passing `opaque: true` replaces `@type` with `@opaque` in the struct type
+specification:
 
 ```elixir
-defmodule Example do
-  use TypedStruct
-
-  typedstruct opaque: true do
-    field :name, String.t()
-  end
+typedstruct opaque: true do
+  field :name, String.t()
 end
 
 # Becomes

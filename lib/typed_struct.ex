@@ -131,15 +131,14 @@ defmodule TypedStruct do
         end
       end
 
-  You can also generate an opaque type for the struct by specyfing
-  `opaque: true`:
+  You can also generate an opaque type for the struct:
 
       defmodule MyOpaqueStruct do
         use TypedStruct
 
-        # Generate an opaque type for the struct
+        # Generate an opaque type for the struct.
         typedstruct opaque: true do
-          field :name, String.t
+          field :name, String.t()
         end
       end
 
@@ -262,15 +261,11 @@ defmodule TypedStruct do
             name: String.t() # Not nullable
           }
 
-  Passing `opaque: true` replaces `@type` with `@opaque` in the struct
-  type specification:
+  Passing `opaque: true` replaces `@type` with `@opaque` in the struct type
+  specification:
 
-      defmodule Example do
-        use TypedStruct
-
-        typedstruct opaque: true do
-          field :name, String.t()
-        end
+      typedstruct opaque: true do
+        field :name, String.t()
       end
 
       # Becomes
