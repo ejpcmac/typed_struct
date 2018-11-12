@@ -1,5 +1,6 @@
 # TypedStruct
 
+[![Build Status](https://travis-ci.com/ejpcmac/typed_struct.svg?branch=develop)](https://travis-ci.com/ejpcmac/typed_struct)
 [![hex.pm version](http://img.shields.io/hexpm/v/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
 
 TypedStruct is a library for defining structs with a type without writing
