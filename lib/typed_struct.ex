@@ -131,6 +131,18 @@ defmodule TypedStruct do
         end
       end
 
+  You can also generate an opaque type for the struct by specyfing
+  `opaque: true`:
+
+      defmodule MyOpaqueStruct do
+        use TypedStruct
+
+        # Generate an opaque type for the struct
+        typedstruct opaque: true do
+          field :name, String.t
+        end
+      end
+
   ### Documentation
 
   To add a `@typedoc` to the struct type, just add the attribute above the
@@ -249,6 +261,23 @@ defmodule TypedStruct do
       @type t() :: %__MODULE__{
             name: String.t() # Not nullable
           }
+
+  Passing `opaque: true` replaces `@type` with `@opaque` in the struct
+  type specification:
+
+      defmodule Example do
+        use TypedStruct
+
+        typedstruct opaque: true do
+          field :name, String.t()
+        end
+      end
+
+      # Becomes
+
+      @opaque t() :: %__MODULE__{
+                name: String.t()
+              }
   """
 
   @doc false
@@ -269,6 +298,7 @@ defmodule TypedStruct do
     * `enforce` - if set to true, sets `enforce: true` to all fields by default.
       This can be overridden by setting `enforce: false` or a default value on
       individual fields.
+    * `opaque` - if set to true, creates an opaque type for the struct
 
   ## Examples
 
@@ -309,7 +339,7 @@ defmodule TypedStruct do
       @enforce_keys @keys_to_enforce
       defstruct @fields
 
-      TypedStruct.__type__(@types)
+      TypedStruct.__type__(@types, unquote(opts))
 
       def __keys__, do: @fields |> Keyword.keys() |> Enum.reverse()
       def __defaults__, do: Enum.reverse(@fields)
@@ -371,9 +401,15 @@ defmodule TypedStruct do
   end
 
   @doc false
-  defmacro __type__(types) do
-    quote bind_quoted: [types: types] do
-      @type t() :: %__MODULE__{unquote_splicing(types)}
+  defmacro __type__(types, opts) do
+    if Keyword.get(opts, :opaque, false) do
+      quote bind_quoted: [types: types] do
+        @opaque t() :: %__MODULE__{unquote_splicing(types)}
+      end
+    else
+      quote bind_quoted: [types: types] do
+        @type t() :: %__MODULE__{unquote_splicing(types)}
+      end
     end
   end
 
