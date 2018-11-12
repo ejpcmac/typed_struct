@@ -18,7 +18,7 @@ script:
   - mix test --trace
   - mix dialyzer --halt-exit-status
   - mix credo
-  - mix format --check-formatted
+  - if [[ "$TRAVIS_ELIXIR_VERSION" == "1.7.4" ]]; then mix format --check-formatted; fi
 cache:
   directories:
     - $PLT_DIR
