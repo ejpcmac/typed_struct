@@ -7,10 +7,18 @@ otp_release:
   - 19.3
   - 20.3
   - 21.1
-script:
+env:
+  - PLT_DIR=$HOME/.plt
+before_script:
+  - mkdir -p $PLT_DIR
   - mix deps.compile
+  - mix dialyzer --plt
+script:
   - mix compile --warnings-as-errors
   - mix test --trace
   - mix dialyzer --halt-exit-status
   - mix credo
   - mix format --check-formatted
+cache:
+  directories:
+    - $PLT_DIR

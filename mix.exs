@@ -61,6 +61,9 @@ defmodule TypedStruct.MixProject do
   # Dialyzer configuration
   defp dialyzer do
     [
+      # Use a custom PLT directory for continuous integration caching.
+      plt_core_path: System.get_env("PLT_DIR"),
+      plt_file: plt_file(),
       plt_add_deps: :transitive,
       flags: [
         :unmatched_returns,
@@ -69,6 +72,13 @@ defmodule TypedStruct.MixProject do
       ],
       ignore_warnings: ".dialyzer_ignore"
     ]
+  end
+
+  defp plt_file do
+    case System.get_env("PLT_DIR") do
+      nil -> nil
+      plt_dir -> {:no_warn, Path.join(plt_dir, "typed_struct.plt")}
+    end
   end
 
   defp cli_env do
