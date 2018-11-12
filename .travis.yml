@@ -12,7 +12,7 @@ env:
 before_script:
   - mkdir -p $PLT_DIR
   - mix deps.compile
-  - mix dialyzer --plt
+  - travis_wait mix dialyzer --plt
 script:
   - mix compile --warnings-as-errors
   - mix test --trace
