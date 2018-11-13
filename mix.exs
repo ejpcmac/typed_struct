@@ -1,7 +1,7 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.1.3"
+  @version "0.1.4"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do
@@ -9,7 +9,6 @@ defmodule TypedStruct.MixProject do
       app: :typed_struct,
       version: @version,
       elixir: "~> 1.6",
-      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
@@ -34,33 +33,28 @@ defmodule TypedStruct.MixProject do
     ]
   end
 
-  def application do
-    [extra_applications: []]
-  end
-
-  # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
-
   defp deps do
     [
       # Development and test dependencies
       {:credo, "~> 0.10.0", only: :dev, runtime: false},
-      {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.0-rc", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
-      {:mix_test_watch, ">= 0.0.0", only: :dev, runtime: false},
+      {:mix_test_watch, ">= 0.0.0", only: :test, runtime: false},
       {:ex_unit_notifier, ">= 0.0.0", only: :test, runtime: false},
 
       # Project dependencies
 
       # Documentation dependencies
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.19", only: :docs, runtime: false}
     ]
   end
 
   # Dialyzer configuration
   defp dialyzer do
     [
+      # Use a custom PLT directory for continuous integration caching.
+      plt_core_path: System.get_env("PLT_DIR"),
+      plt_file: plt_file(),
       plt_add_deps: :transitive,
       flags: [
         :unmatched_returns,
@@ -71,12 +65,25 @@ defmodule TypedStruct.MixProject do
     ]
   end
 
+  defp plt_file do
+    case System.get_env("PLT_DIR") do
+      nil -> nil
+      plt_dir -> {:no_warn, Path.join(plt_dir, "typed_struct.plt")}
+    end
+  end
+
   defp cli_env do
     [
-      # Always run coveralls mix tasks in `:test` env.
+      # Run mix test.watch in `:test` env.
+      "test.watch": :test,
+
+      # Always run Coveralls Mix tasks in `:test` env.
       coveralls: :test,
       "coveralls.detail": :test,
-      "coveralls.html": :test
+      "coveralls.html": :test,
+
+      # Use a custom env for docs.
+      docs: :docs
     ]
   end
 
@@ -85,5 +92,18 @@ defmodule TypedStruct.MixProject do
       licenses: ["MIT"],
       links: %{"GitHub" => @repo_url}
     ]
+  end
+
+  # Helper to add a development revision to the version. Do NOT make a call to
+  # Git this way in a production release!!
+  def dev do
+    with {rev, 0} <-
+           System.cmd("git", ["rev-parse", "--short", "HEAD"],
+             stderr_to_stdout: true
+           ) do
+      "-dev+" <> String.trim(rev)
+    else
+      _ -> "-dev"
+    end
   end
 end

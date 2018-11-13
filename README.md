@@ -1,5 +1,6 @@
 # TypedStruct
 
+[![Build Status](https://travis-ci.com/ejpcmac/typed_struct.svg?branch=develop)](https://travis-ci.com/ejpcmac/typed_struct)
 [![hex.pm version](http://img.shields.io/hexpm/v/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
 
 TypedStruct is a library for defining structs with a type without writing
@@ -81,7 +82,7 @@ Thanks to TypedStruct, this is now possible :)
 To use TypedStruct in your project, add this to your Mix dependencies:
 
 ```elixir
-{:typed_struct, "~> 0.1.3"}
+{:typed_struct, "~> 0.1.4"}
 ```
 
 If you do not plan to compile modules using TypedStruct at runtime, you can add
@@ -140,6 +141,19 @@ defmodule MyStruct do
 
     # A key with a default value is not enforced.
     field :not_enforced_either, integer(), default: 1
+  end
+end
+```
+
+You can also generate an opaque type for the struct:
+
+```elixir
+defmodule MyOpaqueStruct do
+  use TypedStruct
+
+  # Generate an opaque type for the struct.
+  typedstruct opaque: true do
+    field :name, String.t()
   end
 end
 ```
@@ -280,6 +294,22 @@ case it is enforced. Both options would generate the following type:
         name: String.t() # Not nullable
       }
 ```
+
+Passing `opaque: true` replaces `@type` with `@opaque` in the struct type
+specification:
+
+```elixir
+typedstruct opaque: true do
+  field :name, String.t()
+end
+
+# Becomes
+
+@opaque t() :: %__MODULE__{
+          name: String.t()
+        }
+```
+
 
 ## [Contributing](CONTRIBUTING.md)
 
