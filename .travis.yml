@@ -1,12 +1,16 @@
 language: elixir
 elixir:
-  - 1.6.6
-  - 1.7.4
-  - 1.8.1
+  - 1.6
+  - 1.7
+  - 1.8
 otp_release:
   - 19.3
   - 20.3
   - 21.2
+matrix:
+  exclude:
+    - elixir: 1.8
+      otp_release: 19.3
 env:
   - PLT_DIR=$HOME/.plt
 before_script:
