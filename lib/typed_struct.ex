@@ -294,7 +294,8 @@ defmodule TypedStruct do
       This can be overridden by setting `enforce: false` or a default value on
       individual fields.
     * `opaque` - if set to true, creates an opaque type for the struct
-
+    * `plugins` - Set to a list of modules that implement `TypedStruct.Plugin` behaviour.  `[]` by
+      default
   ## Examples
 
       defmodule MyStruct do
@@ -322,13 +323,18 @@ defmodule TypedStruct do
       end
   """
   defmacro typedstruct(opts \\ [], do: block) do
+    plugins = Keyword.get(opts, :plugins, [])
+
     quote do
       Module.register_attribute(__MODULE__, :fields, accumulate: true)
       Module.register_attribute(__MODULE__, :types, accumulate: true)
       Module.register_attribute(__MODULE__, :keys_to_enforce, accumulate: true)
+      Module.register_attribute(__MODULE__, :plugins, accumulate: true)
       Module.put_attribute(__MODULE__, :enforce?, unquote(!!opts[:enforce]))
 
       import TypedStruct
+      TypedStruct.__require_plugins__(__MODULE__, unquote(plugins))
+
       unquote(block)
 
       @enforce_keys @keys_to_enforce
@@ -367,6 +373,45 @@ defmodule TypedStruct do
     end
   end
 
+  @doc """
+  Adds a plugin to a typed struct. `plugin` should be a module that implements the
+  `TypedStruct.Plugin` behaviour.
+  ## Example
+      plugin SomePlugin
+
+  """
+  defmacro plugin(plugin) do
+    quote do
+      require unquote(plugin)
+      Module.put_attribute(__MODULE__, :plugins, unquote(plugin))
+    end
+  end
+
+  defmacro __require_plugins__(mod, plugins) do
+    Enum.map(plugins, fn plugin ->
+      quote do
+        require unquote(plugin)
+        Module.put_attribute(unquote(mod), :plugins, unquote(plugin))
+      end
+    end)
+  end
+
+  defmacro __plugin_before_macros__(plugins, mod, opts) do
+    Enum.map(plugins, fn plugin ->
+      quote do
+        unquote(plugin).before_fields_processed(unquote(mod), unquote(opts))
+      end
+    end)
+  end
+
+  defmacro __plugin_after_macros__(plugins, mod, opts) do
+    Enum.map(plugins, fn plugin ->
+      quote do
+        unquote(plugin).after_fields_processed(unquote(mod), unquote(opts))
+      end
+    end)
+  end
+
   ##
   ## Callbacks
   ##
@@ -389,6 +434,10 @@ defmodule TypedStruct do
     Module.put_attribute(mod, :fields, {name, default})
     Module.put_attribute(mod, :types, {name, type_for(type, nullable?)})
     if enforce?, do: Module.put_attribute(mod, :keys_to_enforce, name)
+
+    Enum.each(Module.get_attribute(mod, :plugins), fn plugin ->
+      plugin.field(mod, name, type, opts)
+    end)
   end
 
   def __field__(_mod, name, _type, _opts) do
