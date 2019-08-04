@@ -1,4 +1,4 @@
-locals_without_parens = [field: 2, field: 3]
+locals_without_parens = [field: 2, field: 3, plugin: 1, plugin: 2]
 
 [
   inputs: [
