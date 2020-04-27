@@ -78,8 +78,8 @@ defmodule TypedStruct do
       {:typed_struct, "~> #{Mix.Project.config()[:version]}"}
 
   If you do not plan to compile modules using TypedStruct at runtime, you can
-  add `runtime: false` to the dependency tuple as TypedStruct is only used
-  during compilation.
+  add `runtime: false` to the dependency tuple as TypedStruct is only used at
+  build time.
 
   If you want to avoid `mix format` putting parentheses on field definitions,
   you can add to your `.formatter.exs`:
@@ -112,6 +112,8 @@ defmodule TypedStruct do
       end
 
   Each field is defined through the `field/2` macro.
+
+  ### Options
 
   If you want to enforce all the keys by default, you can do:
 
@@ -153,7 +155,7 @@ defmodule TypedStruct do
         field :an_int, integer()
       end
 
-  ### Reflexion
+  ### Reflection
 
   To enable the use of information defined by TypedStruct by other modules, each
   typed struct defines three functions:
@@ -308,7 +310,7 @@ defmodule TypedStruct do
         end
       end
 
-  This is the same as writing:
+  The following is an equivalent using the *enforce by default* behaviour:
 
       defmodule MyStruct do
         use TypedStruct

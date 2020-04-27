@@ -86,8 +86,8 @@ To use TypedStruct in your project, add this to your Mix dependencies:
 ```
 
 If you do not plan to compile modules using TypedStruct at runtime, you can add
-`runtime: false` to the dependency tuple as TypedStruct is only used during
-compilation.
+`runtime: false` to the dependency tuple as TypedStruct is only used at build
+time.
 
 If you want to avoid `mix format` putting parentheses on field definitions,
 you can add to your `.formatter.exs`:
@@ -124,6 +124,8 @@ end
 ```
 
 Each field is defined through the `field/2` macro.
+
+### Options
 
 If you want to enforce all the keys by default, you can do:
 
@@ -171,7 +173,7 @@ typedstruct do
 end
 ```
 
-### Reflexion
+### Reflection
 
 To enable the use of information defined by TypedStruct by other modules, each
 typed struct defines three functions:
