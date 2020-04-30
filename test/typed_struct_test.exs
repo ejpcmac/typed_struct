@@ -161,6 +161,21 @@ defmodule TypedStructTest do
 
   ## Problems
 
+  test "TypedStruct macros are available only in the typedstruct block" do
+    assert_raise CompileError, ~r"undefined function field/2", fn ->
+      defmodule ScopeTest do
+        use TypedStruct
+
+        typedstruct do
+          field :in_scope, term()
+        end
+
+        # Let’s try to use field/2 outside of the block.
+        field :out_of_scope, term()
+      end
+    end
+  end
+
   test "the name of a field must be an atom" do
     assert_raise ArgumentError, "a field name must be an atom, got 3", fn ->
       defmodule InvalidStruct do
