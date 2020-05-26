@@ -446,9 +446,9 @@ defmodule TypedStruct do
     end
   end
 
-  ##
-  ## Callbacks
-  ##
+  ############################################################################
+  ##                               Callbacks                                ##
+  ############################################################################
 
   @doc false
   def __field__(mod, name, type, opts) when is_atom(name) do
@@ -487,9 +487,9 @@ defmodule TypedStruct do
     end
   end
 
-  ##
-  ## Helpers
-  ##
+  ############################################################################
+  ##                                Helpers                                 ##
+  ############################################################################
 
   # Makes the type nullable if the key is not enforced.
   defp type_for(type, false), do: type

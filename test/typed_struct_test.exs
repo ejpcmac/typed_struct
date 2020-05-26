@@ -1,6 +1,10 @@
 defmodule TypedStructTest do
   use ExUnit.Case
 
+  ############################################################################
+  ##                               Test data                                ##
+  ############################################################################
+
   # Store the bytecode so we can get information from it.
   {:module, _name, bytecode, _exports} =
     defmodule TestStruct do
@@ -44,7 +48,9 @@ defmodule TypedStructTest do
   # Standard struct name used when comparing generated types.
   @standard_struct_name TypedStructTest.TestStruct
 
-  ## Standard cases
+  ############################################################################
+  ##                             Standard cases                             ##
+  ############################################################################
 
   test "generates the struct with its defaults" do
     assert TestStruct.__struct__() == %TestStruct{
@@ -159,7 +165,9 @@ defmodule TypedStructTest do
     assert delete_context(TestStruct.__types__()) == delete_context(types)
   end
 
-  ## Problems
+  ############################################################################
+  ##                                Problems                                ##
+  ############################################################################
 
   test "TypedStruct macros are available only in the typedstruct block" do
     assert_raise CompileError, ~r"undefined function field/2", fn ->
@@ -170,7 +178,7 @@ defmodule TypedStructTest do
           field :in_scope, term()
         end
 
-        # Let’s try to use field/2 outside of the block.
+        # Let’s try to use field/2 outside the block.
         field :out_of_scope, term()
       end
     end
@@ -201,9 +209,9 @@ defmodule TypedStructTest do
     end
   end
 
-  ##
-  ## Helpers
-  ##
+  ############################################################################
+  ##                                Helpers                                 ##
+  ############################################################################
 
   @elixir_version System.version() |> Version.parse!()
   @min_version Version.parse!("1.7.0-rc")
