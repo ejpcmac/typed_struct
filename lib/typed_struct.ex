@@ -351,11 +351,11 @@ defmodule TypedStruct do
   """
   defmacro typedstruct(opts \\ [], do: block) do
     quote do
-      Module.register_attribute(__MODULE__, :plugins, accumulate: true)
-      Module.register_attribute(__MODULE__, :fields, accumulate: true)
-      Module.register_attribute(__MODULE__, :types, accumulate: true)
-      Module.register_attribute(__MODULE__, :keys_to_enforce, accumulate: true)
-      Module.put_attribute(__MODULE__, :enforce?, unquote(!!opts[:enforce]))
+      Module.register_attribute(__MODULE__, :ts_plugins, accumulate: true)
+      Module.register_attribute(__MODULE__, :ts_fields, accumulate: true)
+      Module.register_attribute(__MODULE__, :ts_types, accumulate: true)
+      Module.register_attribute(__MODULE__, :ts_enforce_keys, accumulate: true)
+      Module.put_attribute(__MODULE__, :ts_enforce?, unquote(!!opts[:enforce]))
 
       # Create a scope to avoid leaks.
       (fn ->
@@ -363,20 +363,25 @@ defmodule TypedStruct do
          unquote(block)
        end).()
 
-      @enforce_keys @keys_to_enforce
-      defstruct @fields
+      @enforce_keys @ts_enforce_keys
+      defstruct @ts_fields
 
-      TypedStruct.__type__(@types, unquote(opts))
+      TypedStruct.__type__(@ts_types, unquote(opts))
 
-      def __keys__, do: @fields |> Keyword.keys() |> Enum.reverse()
-      def __defaults__, do: Enum.reverse(@fields)
-      def __types__, do: Enum.reverse(@types)
+      def __keys__, do: @ts_fields |> Keyword.keys() |> Enum.reverse()
+      def __defaults__, do: Enum.reverse(@ts_fields)
+      def __types__, do: Enum.reverse(@ts_types)
 
-      Enum.each(@plugins, fn {plugin, plugin_opts} ->
+      Enum.each(@ts_plugins, fn {plugin, plugin_opts} ->
         if {:after_definition, 1} in plugin.__info__(:functions) do
           Module.eval_quoted(__MODULE__, plugin.after_definition(plugin_opts))
         end
       end)
+
+      Module.delete_attribute(__MODULE__, :ts_enforce?)
+      Module.delete_attribute(__MODULE__, :ts_enforce_keys)
+      Module.delete_attribute(__MODULE__, :ts_types)
+      Module.delete_attribute(__MODULE__, :ts_plugins)
     end
   end
 
@@ -399,7 +404,7 @@ defmodule TypedStruct do
     quote do
       Module.put_attribute(
         __MODULE__,
-        :plugins,
+        :ts_plugins,
         {unquote(plugin), unquote(opts)}
       )
 
@@ -431,7 +436,7 @@ defmodule TypedStruct do
         unquote(opts)
       )
 
-      Enum.each(@plugins, fn {plugin, plugin_opts} ->
+      Enum.each(@ts_plugins, fn {plugin, plugin_opts} ->
         if {:field, 3} in plugin.__info__(:functions) do
           Module.eval_quoted(
             __MODULE__,
@@ -452,12 +457,12 @@ defmodule TypedStruct do
 
   @doc false
   def __field__(mod, name, type, opts) when is_atom(name) do
-    if mod |> Module.get_attribute(:fields) |> Keyword.has_key?(name) do
+    if mod |> Module.get_attribute(:ts_fields) |> Keyword.has_key?(name) do
       raise ArgumentError, "the field #{inspect(name)} is already set"
     end
 
     has_default? = Keyword.has_key?(opts, :default)
-    enforce_by_default? = Module.get_attribute(mod, :enforce?)
+    enforce_by_default? = Module.get_attribute(mod, :ts_enforce?)
 
     enforce? =
       if is_nil(opts[:enforce]),
@@ -466,9 +471,9 @@ defmodule TypedStruct do
 
     nullable? = !has_default? && !enforce?
 
-    Module.put_attribute(mod, :fields, {name, opts[:default]})
-    Module.put_attribute(mod, :types, {name, type_for(type, nullable?)})
-    if enforce?, do: Module.put_attribute(mod, :keys_to_enforce, name)
+    Module.put_attribute(mod, :ts_fields, {name, opts[:default]})
+    Module.put_attribute(mod, :ts_types, {name, type_for(type, nullable?)})
+    if enforce?, do: Module.put_attribute(mod, :ts_enforce_keys, name)
   end
 
   def __field__(_mod, name, _type, _opts) do
