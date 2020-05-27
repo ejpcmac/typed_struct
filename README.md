@@ -200,47 +200,6 @@ defmodule MyStruct do
 end
 ```
 
-### Reflection
-
-To enable the use of information defined by TypedStruct by other modules, each
-typed struct defines three functions:
-
-* `__keys__/0` - returns the keys of the struct
-* `__defaults__/0` - returns the default value for each field
-* `__types__/0` - returns the quoted type for each field
-
-For instance:
-
-```elixir
-iex(1)> defmodule Demo do
-...(1)>   use TypedStruct
-...(1)>
-...(1)>   typedstruct do
-...(1)>     field :a_field, String.t()
-...(1)>     field :with_default, integer(), default: 7
-...(1)>   end
-...(1)> end
-{:module, Demo,
-<<70, 79, 82, 49, 0, 0, 8, 60, 66, 69, 65, 77, 65, 116, 85, 56, 0, 0, 0, 241,
-0, 0, 0, 24, 11, 69, 108, 105, 120, 105, 114, 46, 68, 101, 109, 111, 8, 95,
-95, 105, 110, 102, 111, 95, 95, 9, 102, ...>>, {:__types__, 0}}
-iex(2)> Demo.__keys__()
-[:a_field, :with_default]
-iex(3)> Demo.__defaults__()
-[a_field: nil, with_default: 7]
-iex(4)> Demo.__types__()
-[
-  a_field: {:|, [],
-  [
-    {{:., [line: 5],
-      [{:__aliases__, [line: 5, counter: -576460752303422524], [:String]}, :t]},
-      [line: 5], []},
-    nil
-  ]},
-  with_default: {:integer, [line: 6], []}
-]
-```
-
 ## What do I get?
 
 When defining an empty `typedstruct` block:
