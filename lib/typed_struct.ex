@@ -456,16 +456,17 @@ defmodule TypedStruct do
       raise ArgumentError, "the field #{inspect(name)} is already set"
     end
 
-    default = opts[:default]
+    has_default? = Keyword.has_key?(opts, :default)
+    enforce_by_default? = Module.get_attribute(mod, :enforce?)
 
     enforce? =
       if is_nil(opts[:enforce]),
-        do: Module.get_attribute(mod, :enforce?) && is_nil(default),
+        do: enforce_by_default? && !has_default?,
         else: !!opts[:enforce]
 
-    nullable? = !default && !enforce?
+    nullable? = !has_default? && !enforce?
 
-    Module.put_attribute(mod, :fields, {name, default})
+    Module.put_attribute(mod, :fields, {name, opts[:default]})
     Module.put_attribute(mod, :types, {name, type_for(type, nullable?)})
     if enforce?, do: Module.put_attribute(mod, :keys_to_enforce, name)
   end
