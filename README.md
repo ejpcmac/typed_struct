@@ -200,6 +200,17 @@ defmodule MyStruct do
 end
 ```
 
+### Some available plugins
+
+* [typed_struct_lens](https://github.com/ejpcmac/typed_struct_lens) -
+    Integration with the [Lens](https://github.com/obrok/lens) library.
+* [typed_struct_legacy_reflection](https://github.com/ejpcmac/typed_struct_legacy_reflection)
+    - Re-enables the legacy reflection functions from TypedStruct 0.1.x.
+
+This list is not meant to be exhaustive, please [search for `typed_struct` on
+hex.pm](https://hex.pm/packages?search=typed_struct) for other results. If you
+want your plugin to appear here, please open an issue.
+
 ## What do I get?
 
 When defining an empty `typedstruct` block:
@@ -298,21 +309,25 @@ end
         }
 ```
 
-
 ## [Contributing](CONTRIBUTING.md)
 
 Before contributing to this project, please read the
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Roadmap
+## Initial roadmap
 
 * [x] Struct definition
 * [x] Type definition (with nullable types)
 * [x] Default values
 * [x] Enforced keys (non-nullable types)
+* [x] Plugin API
+
+## Plugin ideas
+
 * [ ] Default value type-checking (is it possible?)
 * [ ] Guard generation
-* [ ] Ecto integration
+* [x] Integration with [Lens](https://github.com/obrok/lens)
+* [ ] Integration with [Ecto](https://github.com/elixir-ecto/ecto)
 
 ## License
 
