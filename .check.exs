@@ -19,6 +19,6 @@ last_supported_version? =
 
     # Check for unused dependencies in the mix.lock.
     {:unused_deps, "mix deps.unlock --check-unused",
-     enable: last_supported_version?}
+     enabled: last_supported_version?}
   ]
 ]
