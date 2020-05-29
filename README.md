@@ -331,6 +331,6 @@ Before contributing to this project, please read the
 
 ## License
 
-Copyright © 2018-2019 Jean-Philippe Cugnet
+Copyright © 2018-2020 Jean-Philippe Cugnet and Contributors
 
 This project is licensed under the [MIT license](LICENSE).
