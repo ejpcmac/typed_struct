@@ -15,6 +15,10 @@ last_supported_version? =
     # avoids errors in CI when the formatting changes or ex_doc is not
     # compatible with an old Elixir version.
     {:formatter, last_supported_version?},
-    {:ex_doc, last_supported_version?}
+    {:ex_doc, last_supported_version?},
+
+    # Check for unused dependencies in the mix.lock.
+    {:unused_deps, "mix deps.unlock --check-unused",
+     enable: last_supported_version?}
   ]
 ]
