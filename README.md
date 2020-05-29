@@ -202,12 +202,12 @@ end
 
 ### Some available plugins
 
-* [typed_struct_lens](https://github.com/ejpcmac/typed_struct_lens) -
+* [`typed_struct_lens`](https://github.com/ejpcmac/typed_struct_lens) –
     Integration with the [Lens](https://github.com/obrok/lens) library.
-* [typed_struct_legacy_reflection](https://github.com/ejpcmac/typed_struct_legacy_reflection)
-    - Re-enables the legacy reflection functions from TypedStruct 0.1.x.
+* [`typed_struct_legacy_reflection`](https://github.com/ejpcmac/typed_struct_legacy_reflection)
+  – Re-enables the legacy reflection functions from TypedStruct 0.1.x.
 
-This list is not meant to be exhaustive, please [search for `typed_struct` on
+This list is not meant to be exhaustive, please [search for “typed_struct” on
 hex.pm](https://hex.pm/packages?search=typed_struct) for other results. If you
 want your plugin to appear here, please open an issue.
 
