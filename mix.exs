@@ -7,7 +7,7 @@ defmodule TypedStruct.MixProject do
   def project do
     [
       app: :typed_struct,
-      version: @version <> dev(),
+      version: @version,
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
