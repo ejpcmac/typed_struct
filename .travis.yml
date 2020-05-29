@@ -3,14 +3,24 @@ elixir:
   - 1.6
   - 1.7
   - 1.8
+  - 1.9
+  - 1.10
 otp_release:
   - 19.3
   - 20.3
-  - 21.2
+  - 21.3
+  - 22.3
 matrix:
   exclude:
+    - elixir: 1.6
+      otp_release: 22.3
     - elixir: 1.8
       otp_release: 19.3
+    - elixir: 1.9
+      otp_release: 19.3
+    - elixir: 1.10
+      otp_release: 19.3
+      otp_release: 20.3
 env:
   - PLT_DIR=$HOME/.plt
 before_script:
