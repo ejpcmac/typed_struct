@@ -19,11 +19,7 @@ before_script:
   - MIX_ENV=test mix deps.compile
   - travis_wait mix dialyzer --plt
 script:
-  - mix compile --force --verbose --warnings-as-errors
-  - mix test --trace
-  - mix dialyzer --no-compile --no-check --halt-exit-status
-  - mix credo
-  - if [[ "$TRAVIS_ELIXIR_VERSION" == "1.8.1" ]]; then mix format --check-formatted; fi
+  - mix check
 cache:
   directories:
     - $PLT_DIR
