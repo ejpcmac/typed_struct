@@ -1,6 +1,10 @@
 defmodule TypedStructTest do
   use ExUnit.Case
 
+  ############################################################################
+  ##                               Test data                                ##
+  ############################################################################
+
   # Store the bytecode so we can get information from it.
   {:module, _name, bytecode, _exports} =
     defmodule TestStruct do
@@ -33,6 +37,7 @@ defmodule TypedStructTest do
       field :not_enforced, term(), enforce: false
       field :with_default, integer(), default: 1
       field :with_false_default, boolean(), default: false
+      field :with_nil_default, term(), default: nil
     end
 
     def enforce_keys, do: @enforce_keys
@@ -44,7 +49,9 @@ defmodule TypedStructTest do
   # Standard struct name used when comparing generated types.
   @standard_struct_name TypedStructTest.TestStruct
 
-  ## Standard cases
+  ############################################################################
+  ##                             Standard cases                             ##
+  ############################################################################
 
   test "generates the struct with its defaults" do
     assert TestStruct.__struct__() == %TestStruct{
@@ -73,6 +80,10 @@ defmodule TypedStructTest do
 
   test "does not enforce keys for fields with a default value set to `false`" do
     refute :with_false_default in EnforcedTypedStruct.enforce_keys()
+  end
+
+  test "does not enforce keys for fields with a default value set to `nil`" do
+    refute :with_nil_default in EnforcedTypedStruct.enforce_keys()
   end
 
   test "generates a type for the struct" do
@@ -127,39 +138,24 @@ defmodule TypedStructTest do
     assert type1 == type2
   end
 
-  test "generates a function to get the struct keys" do
-    assert TestStruct.__keys__() == [
-             :int,
-             :string,
-             :string_with_default,
-             :mandatory_int
-           ]
-  end
+  ############################################################################
+  ##                                Problems                                ##
+  ############################################################################
 
-  test "generates a function to get the struct defaults" do
-    assert TestStruct.__defaults__() == [
-             int: nil,
-             string: nil,
-             string_with_default: "default",
-             mandatory_int: nil
-           ]
-  end
+  test "TypedStruct macros are available only in the typedstruct block" do
+    assert_raise CompileError, ~r"undefined function field/2", fn ->
+      defmodule ScopeTest do
+        use TypedStruct
 
-  test "generates a function to get the struct types" do
-    types =
-      quote do
-        [
-          int: integer() | nil,
-          string: String.t() | nil,
-          string_with_default: String.t(),
-          mandatory_int: integer()
-        ]
+        typedstruct do
+          field :in_scope, term()
+        end
+
+        # Let’s try to use field/2 outside the block.
+        field :out_of_scope, term()
       end
-
-    assert delete_context(TestStruct.__types__()) == delete_context(types)
+    end
   end
-
-  ## Problems
 
   test "the name of a field must be an atom" do
     assert_raise ArgumentError, "a field name must be an atom, got 3", fn ->
@@ -186,9 +182,9 @@ defmodule TypedStructTest do
     end
   end
 
-  ##
-  ## Helpers
-  ##
+  ############################################################################
+  ##                                Helpers                                 ##
+  ############################################################################
 
   @elixir_version System.version() |> Version.parse!()
   @min_version Version.parse!("1.7.0-rc")
@@ -234,16 +230,4 @@ defmodule TypedStructTest do
 
   defp standardise(list, struct) when is_list(list),
     do: Enum.map(list, &standardise(&1, struct))
-
-  # Deletes the context from a quoted expression.
-  defp delete_context(list) when is_list(list),
-    do: Enum.map(list, &delete_context/1)
-
-  defp delete_context({a, b}),
-    do: {delete_context(a), delete_context(b)}
-
-  defp delete_context({fun, _context, args}),
-    do: {delete_context(fun), [], delete_context(args)}
-
-  defp delete_context(other), do: other
 end

@@ -1,7 +1,7 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.1.4"
+  @version "0.2.0"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do
@@ -36,7 +36,8 @@ defmodule TypedStruct.MixProject do
   defp deps do
     [
       # Development and test dependencies
-      {:credo, "~> 0.10.0", only: :dev, runtime: false},
+      {:ex_check, "~> 0.11.0", only: :dev, runtime: false},
+      {:credo, "~> 1.0", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0-rc", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
       {:mix_test_watch, ">= 0.0.0", only: :test, runtime: false},
@@ -55,7 +56,7 @@ defmodule TypedStruct.MixProject do
       # Use a custom PLT directory for continuous integration caching.
       plt_core_path: System.get_env("PLT_DIR"),
       plt_file: plt_file(),
-      plt_add_deps: :transitive,
+      plt_add_deps: :app_tree,
       flags: [
         :unmatched_returns,
         :error_handling,
