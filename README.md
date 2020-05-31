@@ -82,7 +82,7 @@ Thanks to TypedStruct, this is now possible :)
 To use TypedStruct in your project, add this to your Mix dependencies:
 
 ```elixir
-{:typed_struct, "~> 0.1.4"}
+{:typed_struct, "~> 0.2.0"}
 ```
 
 If you do not plan to compile modules using TypedStruct at runtime, you can add
@@ -101,8 +101,9 @@ you can add to your `.formatter.exs`:
 
 ### General usage
 
-To define a typed struct, use `TypedStruct`, then define your struct within a
-`typedstruct` block:
+To define a typed struct, use
+[`TypedStruct`](https://hexdocs.pm/typed_struct/TypedStruct.html), then define
+your struct within a `typedstruct` block:
 
 ```elixir
 defmodule MyStruct do
@@ -123,7 +124,8 @@ defmodule MyStruct do
 end
 ```
 
-Each field is defined through the `field/2` macro.
+Each field is defined through the
+[`field/2`](https://hexdocs.pm/typed_struct/TypedStruct.html#field/2) macro.
 
 ### Options
 
@@ -176,8 +178,10 @@ end
 ## Plugins
 
 It is possible to extend the scope of TypedStruct by using its plugin interface,
-as described in `TypedStruct.Plugin`. For instance, to automatically generate
-lenses with the [Lens](https://github.com/obrok/lens) library, you can use
+as described in
+[`TypedStruct.Plugin`](https://hexdocs.pm/typed_struct/TypedStruct.Plugin.html).
+For instance, to automatically generate lenses with the
+[Lens](https://github.com/obrok/lens) library, you can use
 [`TypedStructLens`](https://github.com/ejpcmac/typed_struct_lens) and do:
 
 ```elixir
@@ -331,6 +335,6 @@ Before contributing to this project, please read the
 
 ## License
 
-Copyright © 2018-2019 Jean-Philippe Cugnet
+Copyright © 2018-2020 Jean-Philippe Cugnet and Contributors
 
 This project is licensed under the [MIT license](LICENSE).

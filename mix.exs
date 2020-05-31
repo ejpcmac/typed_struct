@@ -7,7 +7,7 @@ defmodule TypedStruct.MixProject do
   def project do
     [
       app: :typed_struct,
-      version: @version <> dev(),
+      version: @version,
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -56,7 +56,7 @@ defmodule TypedStruct.MixProject do
       # Use a custom PLT directory for continuous integration caching.
       plt_core_path: System.get_env("PLT_DIR"),
       plt_file: plt_file(),
-      plt_add_deps: :transitive,
+      plt_add_deps: :app_tree,
       flags: [
         :unmatched_returns,
         :error_handling,
