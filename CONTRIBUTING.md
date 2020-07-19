@@ -144,9 +144,7 @@ To make a change, please use this workflow:
 6. Run the tests and static analyzers to ensure there is no regression and all
     works as expected:
 
-        $ mix test
-        $ mix dialyzer
-        $ mix credo
+        $ mix check
 
 7. If it’s all good, open a pull request to merge your branch into the `develop`
     branch on the main repository.
