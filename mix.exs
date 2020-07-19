@@ -1,13 +1,13 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.2.1"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do
     [
       app: :typed_struct,
-      version: @version,
+      version: @version <> dev(),
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
