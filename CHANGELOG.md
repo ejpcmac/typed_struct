@@ -8,6 +8,18 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+* Add the `module: ModuleName` top-level option to create the typed struct in a
+    submodule.
+
+### Changed
+
+* Update the `@typedoc` example in the documentation to put it inside the
+    `typedstruct` block and not above. While putting it above works in the
+    general case, it is mandatory to put it inside the block when defining a
+    submodule.
+
 ## [0.2.0] - 2020-05-31
 
 ### Added

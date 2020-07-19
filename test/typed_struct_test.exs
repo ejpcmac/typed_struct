@@ -43,6 +43,14 @@ defmodule TypedStructTest do
     def enforce_keys, do: @enforce_keys
   end
 
+  defmodule TestModule do
+    use TypedStruct
+
+    typedstruct module: Struct do
+      field :field, term()
+    end
+  end
+
   @bytecode bytecode
   @bytecode_opaque bytecode_opaque
 
@@ -136,6 +144,10 @@ defmodule TypedStructTest do
       |> standardise(TypedStructTest.TestStruct3)
 
     assert type1 == type2
+  end
+
+  test "generates the struct in a submodule if `module: ModuleName` is set" do
+    assert TestModule.Struct.__struct__() == %TestModule.Struct{field: nil}
   end
 
   ############################################################################

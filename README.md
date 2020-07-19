@@ -63,8 +63,9 @@ defmodule Person do
 
   use TypedStruct
 
-  @typedoc "A person"
   typedstruct do
+    @typedoc "A person"
+
     field :name, String.t(), enforce: true
     field :age, non_neg_integer()
     field :happy?, boolean(), default: true
@@ -162,14 +163,41 @@ defmodule MyOpaqueStruct do
 end
 ```
 
+If you often define submodules containing only a struct, you can avoid
+boilerplate code:
+
+```elixir
+defmodule MyModule do
+  use TypedStruct
+
+  # You now have %MyModule.Struct{}.
+  typedstruct module: Struct do
+    field :field, term()
+  end
+end
+```
+
 ### Documentation
 
-To add a `@typedoc` to the struct type, just add the attribute above the
+To add a `@typedoc` to the struct type, just add the attribute in the
 `typedstruct` block:
 
 ```elixir
-@typedoc "A typed struct"
 typedstruct do
+  @typedoc "A typed struct"
+
+  field :a_string, String.t()
+  field :an_int, integer()
+end
+```
+
+ You can also document submodules this way:
+
+```elixir
+typedstruct module: MyStruct do
+  @moduledoc "A submodule with a typed struct."
+  @typedoc "A typed struct in a submodule"
+
   field :a_string, String.t()
   field :an_int, integer()
 end
@@ -305,12 +333,42 @@ specification:
 typedstruct opaque: true do
   field :name, String.t()
 end
+```
 
-# Becomes
+generates the following type:
 
+```elixir
 @opaque t() :: %__MODULE__{
           name: String.t()
         }
+```
+
+When passing `module: ModuleName`, the whole `typedstruct` block is wrapped in a
+module definition. This way, the following definition:
+
+```elixir
+defmodule MyModule do
+  use TypedStruct
+
+  typedstruct module: Struct do
+    field :field, term()
+  end
+end
+```
+
+becomes:
+
+```elixir
+defmodule MyModule do
+  defmodule Struct do
+    @enforce_keys []
+    defstruct field: nil
+
+    @type t() :: %__MODULE__{
+            field: term() | nil
+          }
+  end
+end
 ```
 
 ## [Contributing](CONTRIBUTING.md)
