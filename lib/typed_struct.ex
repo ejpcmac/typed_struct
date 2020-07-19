@@ -431,6 +431,19 @@ defmodule TypedStruct do
     end
   end
 
+  @doc false
+  defmacro __type__(types, opts) do
+    if Keyword.get(opts, :opaque, false) do
+      quote bind_quoted: [types: types] do
+        @opaque t() :: %__MODULE__{unquote_splicing(types)}
+      end
+    else
+      quote bind_quoted: [types: types] do
+        @type t() :: %__MODULE__{unquote_splicing(types)}
+      end
+    end
+  end
+
   @doc """
   Registers a plugin for the currently defined struct.
 
@@ -497,10 +510,6 @@ defmodule TypedStruct do
     end
   end
 
-  ############################################################################
-  ##                               Callbacks                                ##
-  ############################################################################
-
   @doc false
   def __field__(mod, name, type, opts) when is_atom(name) do
     if mod |> Module.get_attribute(:ts_fields) |> Keyword.has_key?(name) do
@@ -525,23 +534,6 @@ defmodule TypedStruct do
   def __field__(_mod, name, _type, _opts) do
     raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
   end
-
-  @doc false
-  defmacro __type__(types, opts) do
-    if Keyword.get(opts, :opaque, false) do
-      quote bind_quoted: [types: types] do
-        @opaque t() :: %__MODULE__{unquote_splicing(types)}
-      end
-    else
-      quote bind_quoted: [types: types] do
-        @type t() :: %__MODULE__{unquote_splicing(types)}
-      end
-    end
-  end
-
-  ############################################################################
-  ##                                Helpers                                 ##
-  ############################################################################
 
   # Makes the type nullable if the key is not enforced.
   defp type_for(type, false), do: type
