@@ -58,8 +58,9 @@ defmodule TypedStruct do
 
         use TypedStruct
 
-        @typedoc "A person"
         typedstruct do
+          @typedoc "A person"
+
           field :name, String.t(), enforce: true
           field :age, non_neg_integer()
           field :happy?, boolean(), default: true
@@ -144,13 +145,36 @@ defmodule TypedStruct do
         end
       end
 
+  If you often define submodules containing only a struct, you can avoid
+  boilerplate code:
+
+      defmodule MyModule do
+        use TypedStruct
+
+        # You now have %MyModule.Struct{}.
+        typedstruct module: Struct do
+          field :field, term()
+        end
+      end
+
   ### Documentation
 
-  To add a `@typedoc` to the struct type, just add the attribute above the
+  To add a `@typedoc` to the struct type, just add the attribute in the
   `typedstruct` block:
 
-      @typedoc "A typed struct"
       typedstruct do
+        @typedoc "A typed struct"
+
+        field :a_string, String.t()
+        field :an_int, integer()
+      end
+
+  You can also document submodules this way:
+
+      typedstruct module: MyStruct do
+        @moduledoc "A submodule with a typed struct."
+        @typedoc "A typed struct in a submodule"
+
         field :a_string, String.t()
         field :an_int, integer()
       end
@@ -257,11 +281,35 @@ defmodule TypedStruct do
         field :name, String.t()
       end
 
-      # Becomes
+  generates the following type:
 
       @opaque t() :: %__MODULE__{
                 name: String.t()
               }
+
+  When passing `module: ModuleName`, the whole `typedstruct` block is wrapped in
+  a module definition. This way, the following definition:
+
+      defmodule MyModule do
+        use TypedStruct
+
+        typedstruct module: Struct do
+          field :field, term()
+        end
+      end
+
+  becomes:
+
+      defmodule MyModule do
+        defmodule Struct do
+          @enforce_keys []
+          defstruct field: nil
+
+          @type t() :: %__MODULE__{
+                  field: term() | nil
+                }
+        end
+      end
   """
 
   @doc false
@@ -282,7 +330,8 @@ defmodule TypedStruct do
     * `enforce` - if set to true, sets `enforce: true` to all fields by default.
       This can be overridden by setting `enforce: false` or a default value on
       individual fields.
-    * `opaque` - if set to true, creates an opaque type for the struct
+    * `opaque` - if set to true, creates an opaque type for the struct.
+    * `module` - if set, creates the struct in a submodule named `module`.
 
   ## Examples
 
@@ -309,8 +358,48 @@ defmodule TypedStruct do
           field :field_four, atom(), default: :hey
         end
       end
+
+  You can create the struct in a submodule instead:
+
+      defmodule MyModule do
+        use TypedStruct
+
+        typedstruct, module: Struct do
+          field :field_one, String.t()
+          field :field_two, integer(), enforce: true
+          field :field_three, boolean(), enforce: true
+          field :field_four, atom(), default: :hey
+        end
+      end
   """
   defmacro typedstruct(opts \\ [], do: block) do
+    if is_nil(opts[:module]) do
+      quote do
+        Module.eval_quoted(
+          __ENV__,
+          TypedStruct.__typedstruct__(
+            unquote(Macro.escape(block)),
+            unquote(opts)
+          )
+        )
+      end
+    else
+      quote do
+        defmodule unquote(opts[:module]) do
+          Module.eval_quoted(
+            __ENV__,
+            TypedStruct.__typedstruct__(
+              unquote(Macro.escape(block)),
+              unquote(opts)
+            )
+          )
+        end
+      end
+    end
+  end
+
+  @doc false
+  def __typedstruct__(block, opts) do
     quote do
       Module.register_attribute(__MODULE__, :ts_plugins, accumulate: true)
       Module.register_attribute(__MODULE__, :ts_fields, accumulate: true)
@@ -339,6 +428,19 @@ defmodule TypedStruct do
       Module.delete_attribute(__MODULE__, :ts_enforce_keys)
       Module.delete_attribute(__MODULE__, :ts_types)
       Module.delete_attribute(__MODULE__, :ts_plugins)
+    end
+  end
+
+  @doc false
+  defmacro __type__(types, opts) do
+    if Keyword.get(opts, :opaque, false) do
+      quote bind_quoted: [types: types] do
+        @opaque t() :: %__MODULE__{unquote_splicing(types)}
+      end
+    else
+      quote bind_quoted: [types: types] do
+        @type t() :: %__MODULE__{unquote_splicing(types)}
+      end
     end
   end
 
@@ -408,10 +510,6 @@ defmodule TypedStruct do
     end
   end
 
-  ############################################################################
-  ##                               Callbacks                                ##
-  ############################################################################
-
   @doc false
   def __field__(mod, name, type, opts) when is_atom(name) do
     if mod |> Module.get_attribute(:ts_fields) |> Keyword.has_key?(name) do
@@ -436,23 +534,6 @@ defmodule TypedStruct do
   def __field__(_mod, name, _type, _opts) do
     raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
   end
-
-  @doc false
-  defmacro __type__(types, opts) do
-    if Keyword.get(opts, :opaque, false) do
-      quote bind_quoted: [types: types] do
-        @opaque t() :: %__MODULE__{unquote_splicing(types)}
-      end
-    else
-      quote bind_quoted: [types: types] do
-        @type t() :: %__MODULE__{unquote_splicing(types)}
-      end
-    end
-  end
-
-  ############################################################################
-  ##                                Helpers                                 ##
-  ############################################################################
 
   # Makes the type nullable if the key is not enforced.
   defp type_for(type, false), do: type
