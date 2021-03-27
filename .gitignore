@@ -22,6 +22,9 @@
 /cover/
 /doc/
 
+# Temporary files for e.g. tests.
+/tmp/
+
 ##
 ## Editor artifacts
 ##
