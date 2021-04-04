@@ -1,7 +1,13 @@
 # TypedStruct
 
 [![Build Status](https://travis-ci.com/ejpcmac/typed_struct.svg?branch=develop)](https://travis-ci.com/ejpcmac/typed_struct)
-[![hex.pm version](http://img.shields.io/hexpm/v/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
+[![Hex.pm Version](https://img.shields.io/hexpm/v/typed_struct.svg)](https://hex.pm/packages/typed_struct)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/typed_struct/)
+[![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg)](https://hex.pm/packages/typed_struct)
+[![License](https://img.shields.io/hexpm/l/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/ejpcmac/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/commits/develop)
+
+<!-- MDOC !-->
 
 TypedStruct is a library for defining structs with a type without writing
 boilerplate code.
@@ -371,6 +377,8 @@ defmodule MyModule do
 end
 ```
 
+<!-- MDOC !-->
+
 ## [Contributing](CONTRIBUTING.md)
 
 Before contributing to this project, please read the
@@ -391,8 +399,8 @@ Before contributing to this project, please read the
 * [x] Integration with [Lens](https://github.com/obrok/lens)
 * [ ] Integration with [Ecto](https://github.com/elixir-ecto/ecto)
 
-## License
+## Copyright and License
 
-Copyright © 2018-2020 Jean-Philippe Cugnet and Contributors
+Copyright © 2018-2021 Jean-Philippe Cugnet and Contributors
 
-This project is licensed under the [MIT license](LICENSE).
+This project is licensed under the [MIT license](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE).
