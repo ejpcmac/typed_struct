@@ -1,7 +1,12 @@
 # TypedStruct
 
 [![Build Status](https://travis-ci.com/ejpcmac/typed_struct.svg?branch=develop)](https://travis-ci.com/ejpcmac/typed_struct)
-[![hex.pm version](http://img.shields.io/hexpm/v/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
+[![hex.pm version](https://img.shields.io/hexpm/v/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg?style=flat)](https://hexdocs.pm/typed_struct/)
+[![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
+[![License](https://img.shields.io/hexpm/l/typed_struct.svg?style=flat)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)
+
+<!-- MDOC !-->
 
 TypedStruct is a library for defining structs with a type without writing
 boilerplate code.
@@ -191,7 +196,7 @@ typedstruct do
 end
 ```
 
- You can also document submodules this way:
+You can also document submodules this way:
 
 ```elixir
 typedstruct module: MyStruct do
@@ -370,6 +375,7 @@ defmodule MyModule do
   end
 end
 ```
+<!-- MDOC !-->
 
 ## Initial roadmap
 
@@ -401,6 +407,6 @@ Before contributing to this project, please read the
 
 ## License
 
-Copyright © 2018-2020 Jean-Philippe Cugnet and Contributors
+Copyright © 2018-2021 Jean-Philippe Cugnet and Contributors
 
-This project is licensed under the [MIT license](LICENSE).
+This project is licensed under the [MIT license](./LICENSE.md).
