@@ -1,6 +1,6 @@
-MIT License
+# MIT License
 
-Copyright (c) 2018-2020 Jean-Philippe Cugnet and Contributors
+Copyright © 2018-2021 Jean-Philippe Cugnet and Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -20,9 +20,16 @@ defmodule TypedStruct.MixProject do
       # Docs
       name: "TypedStruct",
       docs: [
-        main: "TypedStruct",
+        extras: [
+          "README.md": [title: "Overview"],
+          "CHANGELOG.md": [title: "Changelog"],
+          "CONTRIBUTING.md": [title: "Contributing"],
+          "LICENSE.md": [title: "License"]
+        ],
+        main: "readme",
         source_url: @repo_url,
-        source_ref: "v#{@version}"
+        source_ref: "v#{@version}",
+        formatters: ["html"]
       ],
 
       # Package
@@ -46,7 +53,7 @@ defmodule TypedStruct.MixProject do
       # Project dependencies
 
       # Documentation dependencies
-      {:ex_doc, "~> 0.19", only: :docs, runtime: false}
+      {:ex_doc, ">= 0.0.0", only: :docs, runtime: false}
     ]
   end
 
@@ -91,7 +98,10 @@ defmodule TypedStruct.MixProject do
   defp package do
     [
       licenses: ["MIT"],
-      links: %{"GitHub" => @repo_url}
+      links: %{
+        "Changelog" => "https://hexdocs.pm/typed_struct/changelog.html",
+        "GitHub" => @repo_url
+      }
     ]
   end
 
