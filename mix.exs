@@ -21,10 +21,10 @@ defmodule TypedStruct.MixProject do
       name: "TypedStruct",
       docs: [
         extras: [
+          "README.md": [title: "Overview"],
           "CHANGELOG.md": [title: "Changelog"],
           "CONTRIBUTING.md": [title: "Contributing"],
-          "LICENSE.md": [title: "License"],
-          "README.md": [title: "Overview"]
+          "LICENSE.md": [title: "License"]
         ],
         main: "readme",
         source_url: @repo_url,
