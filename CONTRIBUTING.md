@@ -3,9 +3,9 @@
 TypedStruct is written in [Elixir](https://elixir-lang.org).
 
 For branching management, this project uses
-[git-flow](https://github.com/petervanderdoes/gitflow-avh). The `master` branch
+[git-flow](https://github.com/petervanderdoes/gitflow-avh). The `main` branch
 is reserved for releases: the development process occurs on `develop` and
-feature branches. **Please never commit to master.**
+feature branches. **Please never commit to main.**
 
 You can easily set up a development environment featuring all the dependencies,
 including Elixir and `git-flow`, by using [Nix](https://nixos.org/nix/). This is
