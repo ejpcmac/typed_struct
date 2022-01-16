@@ -36,14 +36,14 @@ jobs:
           - elixir: "1.13"
             otp: "24.0"
   steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v2.4.0
-    - name: Install Elixir/OTP
-      uses: erlef/setup-beam@v1.10.0
-      with:
-        otp-version: ${{matrix.otp}}
-        elixir-version: ${{matrix.elixir}}
-    - name: Fetch the dependencies
-      run: mix deps.get
-    - name: Check (mix check)
-      run: mix check
+  - name: Checkout the repository
+    uses: actions/checkout@v2.4.0
+  - name: Install Elixir/OTP
+    uses: erlef/setup-beam@v1.10.0
+    with:
+      otp-version: ${{matrix.otp}}
+      elixir-version: ${{matrix.elixir}}
+  - name: Fetch the dependencies
+    run: mix deps.get
+  - name: Check (mix check)
+    run: mix check
