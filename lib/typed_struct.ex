@@ -66,28 +66,21 @@ defmodule TypedStruct do
       end
   """
   defmacro typedstruct(opts \\ [], do: block) do
-    if is_nil(opts[:module]) do
-      quote do
-        Module.eval_quoted(
-          __ENV__,
-          TypedStruct.__typedstruct__(
-            unquote(Macro.escape(block)),
-            unquote(opts)
-          )
-        )
-      end
-    else
-      quote do
-        defmodule unquote(opts[:module]) do
-          Module.eval_quoted(
-            __ENV__,
-            TypedStruct.__typedstruct__(
-              unquote(Macro.escape(block)),
-              unquote(opts)
-            )
-          )
+    ast = TypedStruct.__typedstruct__(block, opts)
+
+    case opts[:module] do
+      nil ->
+        quote do
+          # create a lexical scope
+          (fn -> unquote(ast) end).()
         end
-      end
+
+      module ->
+        quote do
+          defmodule unquote(module) do
+            unquote(ast)
+          end
+        end
     end
   end
 
