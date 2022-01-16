@@ -1,0 +1,49 @@
+name: "CI checks"
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/*
+      - feature/*
+    pull_request:
+      branches:
+        - develop
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: "CI checks for typed_struct [OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}]"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - elixir: "1.9"
+            otp: "22.3"
+          - elixir: "1.10"
+            otp: "22.3"
+          - elixir: "1.10"
+            otp: "23.3"
+          - elixir: "1.11"
+            otp: "23.3"
+          - elixir: "1.12"
+            otp: "23.3"
+          - elixir: "1.12"
+            otp: "24.0"
+          - elixir: "1.13"
+            otp: "23.3"
+          - elixir: "1.13"
+            otp: "24.0"
+  steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2.4.0
+    - name: Install Elixir/OTP
+      uses: erlef/setup-beam@v1.10.0
+      with:
+        otp-version: ${{matrix.otp}}
+        elixir-version: ${{matrix.elixir}}
+    - name: Fetch the dependencies
+      run: mix deps.get
+    - name: Check (mix check)
+      run: mix check
