@@ -11,17 +11,16 @@ defmodule TypedStruct.Plugin do
   ## Plugin definition
 
   A TypedStruct plugin is a module that implements `TypedStruct.Plugin`. Three
-  callbacks can be used to inject code at different steps:
+  callbacks are available to you for injecting code at different steps:
 
     * `c:init/1` lets you inject code where the `TypedStruct.plugin/2` macro is
       called,
-    * `c:field/3` lets you inject code on each field definition,
+    * `c:field/4` lets you inject code on each field definition,
     * `c:after_definition/1` lets you insert code after the struct and its type
       have been defined.
 
-  To provide the maximum flexibility, the last two callbacks are optional and a
-  default implementation of `c:init/1` is defined when `use`-ing the module, so
-  that you do not have to write it yourself if you do not need it.
+  `use`-ing this module will inject default, overrideable implementations of all
+  three, so you only have to implement those you care about.
 
   ### Example
 
@@ -108,10 +107,12 @@ defmodule TypedStruct.Plugin do
 
         # The field callback is called for each field defined in the typedstruct
         # block. You get exactly what the user has passed to the field macro,
-        # plus options from every plugin init.
+        # plus options from every plugin init. The `env` variable contains the
+        # environment as it stood at the moment of the corresponding
+        # `TypedStruct.field/3` call.
         @impl true
-        @spec field(atom(), any(), keyword()) :: Macro.t()
-        def field(name, _type, opts) do
+        @spec field(atom(), any(), keyword(), Macro.Env.t()) :: Macro.t()
+        def field(name, _type, opts, _env) do
           # Same as for the struct description, we want to upcase at build time
           # if necessary. As we do not have access to the module here, we cannot
           # access @upcase. This is not an issue since the option is
@@ -148,14 +149,24 @@ defmodule TypedStruct.Plugin do
   """
   @macrocallback init(opts :: keyword()) :: Macro.t()
 
+  @doc deprecated: "Use TypedStruct.Plugin.field/4 instead"
+  @callback field(name :: atom(), type :: any(), opts :: keyword()) ::
+              Macro.t()
+
   @doc """
   Injects code after each field definition.
 
-  `name` and `type` are the exact values passed to the `TypedStruct.field/3`
+  `name` and `type` are the exact values passed to the `TypedStruct.field/4`
   macro in the `typedstruct` block. `opts` is the concatenation of the options
-  passed to the `field` macro and those from the plugin init.
+  passed to the `field` macro and those from the plugin init. `env` is the
+  environment at the time of each field definition.
   """
-  @callback field(name :: atom(), type :: any(), opts :: keyword()) ::
+  @callback field(
+              name :: atom(),
+              type :: any(),
+              opts :: keyword(),
+              env :: Macro.Env.t()
+            ) ::
               Macro.t()
 
   @doc """
@@ -163,9 +174,7 @@ defmodule TypedStruct.Plugin do
   """
   @callback after_definition(opts :: keyword()) :: Macro.t()
 
-  # All the callbacks are optional so the user has more flexibility. Only init/1
-  # is mandatory but an overrideable default is defined when use-ing the module.
-  @optional_callbacks [field: 3, after_definition: 1]
+  @optional_callbacks [field: 3]
 
   @doc false
   defmacro __using__(_opts) do
@@ -174,7 +183,18 @@ defmodule TypedStruct.Plugin do
 
       @doc false
       defmacro init(_opts), do: nil
-      defoverridable init: 1
+
+      @doc false
+      def field(name, type, opts, _env) do
+        if {:field, 3} in __MODULE__.__info__(:functions) do
+          field(name, type, opts)
+        end
+      end
+
+      @doc false
+      def after_definition(_opts), do: nil
+
+      defoverridable init: 1, field: 4, after_definition: 1
     end
   end
 end

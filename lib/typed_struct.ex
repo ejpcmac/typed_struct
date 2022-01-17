@@ -171,12 +171,13 @@ defmodule TypedStruct do
   """
   defmacro field(name, type, opts \\ []) do
     quote bind_quoted: [name: name, type: Macro.escape(type), opts: opts] do
-      TypedStruct.__field__(__MODULE__, name, type, opts)
+      TypedStruct.__field__(__ENV__, name, type, opts)
     end
   end
 
   @doc false
-  def __field__(mod, name, type, opts) when is_atom(name) do
+  def __field__(%Macro.Env{module: mod} = env, name, type, opts)
+      when is_atom(name) do
     if mod |> Module.get_attribute(:ts_fields) |> Keyword.has_key?(name) do
       raise ArgumentError, "the field #{inspect(name)} is already set"
     end
@@ -192,12 +193,12 @@ defmodule TypedStruct do
     nullable? = !has_default? && !enforce?
 
     Module.put_attribute(mod, :ts_fields, {name, opts[:default]})
-    Module.put_attribute(mod, :ts_plugin_fields, {name, type, opts})
+    Module.put_attribute(mod, :ts_plugin_fields, {name, type, opts, env})
     Module.put_attribute(mod, :ts_types, {name, type_for(type, nullable?)})
     if enforce?, do: Module.put_attribute(mod, :ts_enforce_keys, name)
   end
 
-  def __field__(_mod, name, _type, _opts) do
+  def __field__(_env, name, _type, _opts) do
     raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
   end
 
@@ -210,20 +211,18 @@ defmodule TypedStruct do
     plugins = Module.get_attribute(module, :ts_plugins)
     fields = Module.get_attribute(module, :ts_plugin_fields) |> Enum.reverse()
 
+    Enum.each(unquote(@attrs_to_delete), &Module.delete_attribute(module, &1))
+
     fields_block =
       for {plugin, plugin_opts} <- plugins,
-          {name, type, field_opts} <- fields,
-          {:field, 3} in plugin.__info__(:functions) do
-        plugin.field(name, type, field_opts ++ plugin_opts)
+          {name, type, field_opts, env} <- fields do
+        plugin.field(name, type, field_opts ++ plugin_opts, env)
       end
 
     after_definition_block =
-      for {plugin, plugin_opts} <- plugins,
-          {:after_definition, 1} in plugin.__info__(:functions) do
+      for {plugin, plugin_opts} <- plugins do
         plugin.after_definition(plugin_opts)
       end
-
-    Enum.each(unquote(@attrs_to_delete), &Module.delete_attribute(module, &1))
 
     quote do
       unquote_splicing(fields_block)
