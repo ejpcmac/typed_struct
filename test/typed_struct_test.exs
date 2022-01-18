@@ -51,8 +51,18 @@ defmodule TypedStructTest do
     end
   end
 
+  {:module, _name, bytecode_noalias, _exports} =
+    defmodule TestStructNoAlias do
+      use TypedStruct
+
+      typedstruct do
+        field :test, TestModule.TestSubModule.t()
+      end
+    end
+
   @bytecode bytecode
   @bytecode_opaque bytecode_opaque
+  @bytecode_noalias bytecode_noalias
 
   # Standard struct name used when comparing generated types.
   @standard_struct_name TypedStructTest.TestStruct
@@ -192,6 +202,33 @@ defmodule TypedStructTest do
         end
       end
     end
+  end
+
+  test "aliases are properly resolved in types" do
+    {:module, _name, bytecode_actual, _exports} =
+      defmodule TestStructWithAlias do
+        use TypedStruct
+
+        typedstruct do
+          alias TestModule.TestSubModule
+
+          field :test, TestSubModule.t()
+        end
+      end
+
+    # Get both types and standardise them (remove line numbers and rename
+    # the second struct with the name of the first one).
+    type1 =
+      @bytecode_noalias
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStructNoAlias)
+
+    type2 =
+      bytecode_actual
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStructWithAlias)
+
+    assert type1 == type2
   end
 
   ############################################################################
