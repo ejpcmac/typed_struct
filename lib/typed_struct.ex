@@ -100,11 +100,8 @@ defmodule TypedStruct do
       Module.register_attribute(__MODULE__, :ts_enforce_keys, accumulate: true)
       Module.put_attribute(__MODULE__, :ts_enforce?, unquote(!!opts[:enforce]))
 
-      # Create a scope to avoid leaks.
-      (fn ->
-         import TypedStruct
-         unquote(block)
-       end).()
+      import TypedStruct
+      unquote(block)
 
       @enforce_keys @ts_enforce_keys
       defstruct @ts_fields
