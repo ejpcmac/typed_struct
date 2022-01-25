@@ -57,7 +57,7 @@ defmodule TypedStruct do
       defmodule MyModule do
         use TypedStruct
 
-        typedstruct, module: Struct do
+        typedstruct module: Struct do
           field :field_one, String.t()
           field :field_two, integer(), enforce: true
           field :field_three, boolean(), enforce: true
