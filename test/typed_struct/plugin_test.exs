@@ -137,6 +137,12 @@ defmodule TypedStruct.PluginTest do
     assert TestStruct.function_defined_by_the_plugin_after_definition()
   end
 
+  test "empty plugin compiled without error" do
+    defmodule EmptyPlugin do
+      use TypedStruct.Plugin
+    end
+  end
+
   ############################################################################
   ##                                Problems                                ##
   ############################################################################
