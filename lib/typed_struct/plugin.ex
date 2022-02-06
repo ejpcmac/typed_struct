@@ -19,7 +19,7 @@ defmodule TypedStruct.Plugin do
     * `c:after_definition/1` lets you insert code after the struct and its type
       have been defined.
 
-  `use`-ing this module will inject default, overrideable implementations of all
+  `use`-ing this module will inject default implementations of all
   three, so you only have to implement those you care about.
 
   ### Example
@@ -174,27 +174,51 @@ defmodule TypedStruct.Plugin do
   """
   @callback after_definition(opts :: keyword()) :: Macro.t()
 
-  @optional_callbacks [field: 3]
+  @optional_callbacks [field: 3, field: 4]
 
   @doc false
   defmacro __using__(_opts) do
     quote do
       @behaviour TypedStruct.Plugin
+      @before_compile {unquote(__MODULE__), :maybe_inject_field_4}
 
       @doc false
       defmacro init(_opts), do: nil
 
       @doc false
-      def field(name, type, opts, _env) do
-        if {:field, 3} in __MODULE__.__info__(:functions) do
-          field(name, type, opts)
-        end
-      end
-
-      @doc false
       def after_definition(_opts), do: nil
 
-      defoverridable init: 1, field: 4, after_definition: 1
+      defoverridable init: 1, after_definition: 1
+    end
+  end
+
+  @doc false
+  defmacro maybe_inject_field_4(env) do
+    case {Module.defines?(env.module, {:field, 3}, :def),
+          Module.defines?(env.module, {:field, 4}, :def)} do
+      {true, true} ->
+        IO.warn([
+          env.module,
+          " defines both field/3 and field/4 callbacks.",
+          " Only field/4 will be invoked."
+        ])
+
+      {true, _} ->
+        quote do
+          @doc false
+          def field(name, type, opts, _env) do
+            field(name, type, opts)
+          end
+        end
+
+      {_, true} ->
+        nil
+
+      _ ->
+        quote do
+          @doc false
+          def field(_name, _type, _opts, _env), do: nil
+        end
     end
   end
 end
