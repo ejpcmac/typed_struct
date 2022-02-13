@@ -180,7 +180,7 @@ defmodule TypedStruct.Plugin do
   defmacro __using__(_opts) do
     quote do
       @behaviour TypedStruct.Plugin
-      @before_compile {unquote(__MODULE__), :maybe_inject_field_4}
+      @before_compile {unquote(__MODULE__), :maybe_define_field_4}
 
       @doc false
       defmacro init(_opts), do: nil
@@ -193,17 +193,22 @@ defmodule TypedStruct.Plugin do
   end
 
   @doc false
-  defmacro maybe_inject_field_4(env) do
+  defmacro maybe_define_field_4(env) do
     case {Module.defines?(env.module, {:field, 3}, :def),
           Module.defines?(env.module, {:field, 4}, :def)} do
-      {true, true} ->
-        IO.warn([
-          env.module,
-          " defines both field/3 and field/4 callbacks.",
-          " Only field/4 will be invoked."
-        ])
+      {false, false} ->
+        # If none is present, let’s define a default implementation for field/4.
+        quote do
+          @doc false
+          def field(_name, _type, _opts, _env), do: nil
+        end
 
-      {true, _} ->
+      {false, true} ->
+        # If field/4 is present, allright.
+        nil
+
+      {true, false} ->
+        # If field/3 is present, let’s define field/4 from it for compatibility.
         quote do
           @doc false
           def field(name, type, opts, _env) do
@@ -211,14 +216,13 @@ defmodule TypedStruct.Plugin do
           end
         end
 
-      {_, true} ->
-        nil
-
-      _ ->
-        quote do
-          @doc false
-          def field(_name, _type, _opts, _env), do: nil
-        end
+      {true, true} ->
+        # If both are present, this is an issue.
+        IO.warn([
+          env.module,
+          " defines both field/3 and field/4 callbacks.",
+          " Only field/4 will be invoked."
+        ])
     end
   end
 end
