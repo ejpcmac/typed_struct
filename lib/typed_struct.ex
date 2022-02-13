@@ -2,16 +2,16 @@ defmodule TypedStruct do
   @external_resource "README.md"
   @moduledoc "README.md"
              |> File.read!()
-             |> String.split("<!-- MDOC !-->")
+             |> String.split("<!-- @moduledoc -->")
              |> Enum.fetch!(1)
 
-  @accumulating_attrs ~w/
-    ts_plugins
-    ts_plugin_fields
-    ts_fields
-    ts_types
-    ts_enforce_keys
-    /a
+  @accumulating_attrs [
+    :ts_plugins,
+    :ts_plugin_fields,
+    :ts_fields,
+    :ts_types,
+    :ts_enforce_keys
+  ]
 
   @attrs_to_delete [:ts_enforce? | @accumulating_attrs]
 
@@ -81,7 +81,7 @@ defmodule TypedStruct do
     case opts[:module] do
       nil ->
         quote do
-          # create a lexical scope
+          # Create a lexical scope.
           (fn -> unquote(ast) end).()
         end
 

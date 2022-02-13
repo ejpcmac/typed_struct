@@ -91,6 +91,12 @@ defmodule TypedStruct.PluginTest do
   ##                             Standard cases                             ##
   ############################################################################
 
+  test "all callbacks are optional to define" do
+    defmodule EmptyPlugin do
+      use TypedStruct.Plugin
+    end
+  end
+
   test "quoted code in init/1 is available in the typedstruct block" do
     assert TestStruct.call_function_from_plugin()
   end
@@ -135,12 +141,6 @@ defmodule TypedStruct.PluginTest do
 
   test "after_definition/1 can inject code in the compiled module" do
     assert TestStruct.function_defined_by_the_plugin_after_definition()
-  end
-
-  test "empty plugin compiled without error" do
-    defmodule EmptyPlugin do
-      use TypedStruct.Plugin
-    end
   end
 
   ############################################################################

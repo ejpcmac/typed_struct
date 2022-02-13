@@ -58,11 +58,11 @@ defmodule TypedStruct.PluginEnvTest do
   ##                                 Tests                                  ##
   ############################################################################
 
-  test "The field/4 env includes aliases made prior to typedstruct call" do
+  test "the field/4 env includes aliases made prior to typedstruct call" do
     assert TestModule.get_meaning_of_life(:first) == 42
   end
 
-  test "The field/4 env includes aliases made within typedstruct call" do
+  test "the field/4 env includes aliases made within typedstruct call" do
     assert TestModule.get_meaning_of_life(:second) == 42
   end
 end

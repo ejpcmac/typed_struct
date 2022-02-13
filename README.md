@@ -6,7 +6,7 @@
 [![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
 [![License](https://img.shields.io/hexpm/l/typed_struct.svg?style=flat)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)
 
-<!-- MDOC !-->
+<!-- @moduledoc -->
 
 TypedStruct is a library for defining structs with a type without writing
 boilerplate code.
@@ -375,7 +375,8 @@ defmodule MyModule do
   end
 end
 ```
-<!-- MDOC !-->
+
+<!-- @moduledoc -->
 
 ## Initial roadmap
 
