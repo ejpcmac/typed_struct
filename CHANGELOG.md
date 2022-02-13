@@ -8,6 +8,32 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+* [Plugin] Add the `field/4` callback with an additional `env` argument. This is
+    the same as `field/3` but gives access to the environment of the field
+    definition.
+
+### Deprecated
+
+* [Plugin] Deprecate the `field/3` callback in favour of `field/4`. You should
+    migrate to `field/4`, simply by adding `_env` as the last argument in your
+    implementation. Currently, if a plugin implements `field/3`, `field/4` is
+    derived from it. `field/3` will be removed in TypedStruct 1.0.0.
+
+### Removed
+
+* Drop support for unsupported Elixir versions in the tests and CI. The
+    library may still be compatible, but this is not tested.
+
+### Fixed
+
+* Fix the lexical scope of the `typestruct` block, so it covers it completely.
+    Previously, anything defined inside the `typedstruct` block, such as
+    aliases, would not be available for the field definitions. See #22 and #21
+    for details.
+* Fix a typo in the documentation.
+
 ## [0.2.1] - 2020-07-19
 
 ### Added
