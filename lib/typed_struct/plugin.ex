@@ -156,7 +156,7 @@ defmodule TypedStruct.Plugin do
   @doc """
   Injects code after each field definition.
 
-  `name` and `type` are the exact values passed to the `TypedStruct.field/4`
+  `name` and `type` are the exact values passed to the `TypedStruct.field/3`
   macro in the `typedstruct` block. `opts` is the concatenation of the options
   passed to the `field` macro and those from the plugin init. `env` is the
   environment at the time of each field definition.
