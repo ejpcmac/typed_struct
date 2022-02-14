@@ -167,6 +167,16 @@ defmodule TypedStruct.PluginTest do
                  end
   end
 
+  test "defining field/3 emits a deprecation warning" do
+    assert capture_io(:stderr, fn ->
+             defmodule PluginWithField3 do
+               use TypedStruct.Plugin
+
+               def field(_name, _type, _opts), do: nil
+             end
+           end) =~ "PluginWithField3 defines field/3, which is deprecated."
+  end
+
   test "defining both field/3 and field/4 emits a compilation warning" do
     assert capture_io(:stderr, fn ->
              defmodule PluginWithField3And4 do

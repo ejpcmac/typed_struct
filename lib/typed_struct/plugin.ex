@@ -209,6 +209,11 @@ defmodule TypedStruct.Plugin do
 
       {true, false} ->
         # If field/3 is present, let’s define field/4 from it for compatibility.
+        IO.warn([
+          Atom.to_string(env.module),
+          " defines field/3, which is deprecated. Please use field/4 instead"
+        ])
+
         quote do
           @doc false
           def field(name, type, opts, _env) do

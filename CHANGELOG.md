@@ -19,7 +19,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 * [Plugin] Deprecate the `field/3` callback in favour of `field/4`. You should
     migrate to `field/4`, simply by adding `_env` as the last argument in your
     implementation. Currently, if a plugin implements `field/3`, `field/4` is
-    derived from it. `field/3` will be removed in TypedStruct 1.0.0.
+    derived from it and a compilation warning is emitted. `field/3` will be
+    removed in TypedStruct 1.0.0.
 
 ### Removed
 
