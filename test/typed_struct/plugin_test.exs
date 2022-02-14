@@ -38,7 +38,7 @@ defmodule TypedStruct.PluginTest do
     end
 
     @impl true
-    def field(name, _type, opts) do
+    def field(name, _type, opts, _env) do
       quote do
         # Keep a list of the fields on which it has been called.
         Module.put_attribute(__MODULE__, :test_field_list, unquote(name))
@@ -60,7 +60,7 @@ defmodule TypedStruct.PluginTest do
         # Make the options inspectable.
         def plugin_after_definition_options, do: unquote(opts)
 
-        # Make the list of fields built by our field/3 callback inspectable.
+        # Make the list of fields built by our field/4 callback inspectable.
         def test_field_list, do: @test_field_list
 
         # If @enforce_keys is valid, it means the struct has been defined by
@@ -111,15 +111,15 @@ defmodule TypedStruct.PluginTest do
     assert TestStruct.plugin_init_options() == [global: :global_value]
   end
 
-  test "field/3 is called on each field declaration" do
+  test "field/4 is called on each field declaration" do
     assert TestStruct.test_field_list() == [:another_field, :a_field]
   end
 
-  test "field/3 can inject code in the compiled module" do
+  test "field/4 can inject code in the compiled module" do
     assert TestStruct.function_defined_by_the_plugin_for(:a_field) == :a_field
   end
 
-  test "field/3 is called with both local and global options" do
+  test "field/4 is called with both local and global options" do
     assert TestStruct.options_for(:a_field) == [
              local: :local_value,
              global: :global_value
