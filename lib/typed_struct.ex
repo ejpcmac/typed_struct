@@ -171,12 +171,12 @@ defmodule TypedStruct do
   """
   defmacro field(name, type, opts \\ []) do
     quote bind_quoted: [name: name, type: Macro.escape(type), opts: opts] do
-      TypedStruct.__field__(__ENV__, name, type, opts)
+      TypedStruct.__field__(name, type, opts, __ENV__)
     end
   end
 
   @doc false
-  def __field__(%Macro.Env{module: mod} = env, name, type, opts)
+  def __field__(name, type, opts, %Macro.Env{module: mod} = env)
       when is_atom(name) do
     if mod |> Module.get_attribute(:ts_fields) |> Keyword.has_key?(name) do
       raise ArgumentError, "the field #{inspect(name)} is already set"
@@ -198,7 +198,7 @@ defmodule TypedStruct do
     if enforce?, do: Module.put_attribute(mod, :ts_enforce_keys, name)
   end
 
-  def __field__(_env, name, _type, _opts) do
+  def __field__(name, _type, _opts, _env) do
     raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
   end
 
