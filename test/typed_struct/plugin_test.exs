@@ -1,6 +1,8 @@
 defmodule TypedStruct.PluginTest do
   use ExUnit.Case
 
+  import ExUnit.CaptureIO
+
   ############################################################################
   ##                               Test data                                ##
   ############################################################################
@@ -163,5 +165,16 @@ defmodule TypedStruct.PluginTest do
                      def call_function_from_plugin, do: function_from_plugin()
                    end
                  end
+  end
+
+  test "defining both field/3 and field/4 emits a compilation warning" do
+    assert capture_io(:stderr, fn ->
+             defmodule PluginWithField3And4 do
+               use TypedStruct.Plugin
+
+               def field(_name, _type, _opts), do: nil
+               def field(_name, _type, _opts, _env), do: nil
+             end
+           end) =~ "PluginWithField3And4 defines both field/3 and field/4"
   end
 end

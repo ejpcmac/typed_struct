@@ -219,9 +219,9 @@ defmodule TypedStruct.Plugin do
       {true, true} ->
         # If both are present, this is an issue.
         IO.warn([
-          env.module,
+          Atom.to_string(env.module),
           " defines both field/3 and field/4 callbacks.",
-          " Only field/4 will be invoked."
+          " Only field/4 will be invoked"
         ])
     end
   end
