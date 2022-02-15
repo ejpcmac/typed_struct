@@ -88,7 +88,7 @@ Thanks to TypedStruct, this is now possible :)
 To use TypedStruct in your project, add this to your Mix dependencies:
 
 ```elixir
-{:typed_struct, "~> 0.2.1"}
+{:typed_struct, "~> 0.3.0"}
 ```
 
 If you do not plan to compile modules using TypedStruct at runtime, you can add
@@ -408,6 +408,6 @@ Before contributing to this project, please read the
 
 ## License
 
-Copyright © 2018-2021 Jean-Philippe Cugnet and Contributors
+Copyright © 2018-2022 Jean-Philippe Cugnet and Contributors
 
 This project is licensed under the [MIT license](./LICENSE.md).
