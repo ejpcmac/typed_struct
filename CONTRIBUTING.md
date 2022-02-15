@@ -158,4 +158,4 @@ All contributed code must be documented and functions must have typespecs. In
 general, take your inspiration from the existing code.
 
 Please name your commits using [Conventional
-Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+Commits](https://www.conventionalcommits.org/en/v1.0.0/).
