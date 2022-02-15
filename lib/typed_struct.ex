@@ -2,8 +2,18 @@ defmodule TypedStruct do
   @external_resource "README.md"
   @moduledoc "README.md"
              |> File.read!()
-             |> String.split("<!-- MDOC !-->")
+             |> String.split("<!-- @moduledoc -->")
              |> Enum.fetch!(1)
+
+  @accumulating_attrs [
+    :ts_plugins,
+    :ts_plugin_fields,
+    :ts_fields,
+    :ts_types,
+    :ts_enforce_keys
+  ]
+
+  @attrs_to_delete [:ts_enforce? | @accumulating_attrs]
 
   @doc false
   defmacro __using__(_) do
@@ -57,7 +67,7 @@ defmodule TypedStruct do
       defmodule MyModule do
         use TypedStruct
 
-        typedstruct, module: Struct do
+        typedstruct module: Struct do
           field :field_one, String.t()
           field :field_two, integer(), enforce: true
           field :field_three, boolean(), enforce: true
@@ -66,61 +76,41 @@ defmodule TypedStruct do
       end
   """
   defmacro typedstruct(opts \\ [], do: block) do
-    if is_nil(opts[:module]) do
-      quote do
-        Module.eval_quoted(
-          __ENV__,
-          TypedStruct.__typedstruct__(
-            unquote(Macro.escape(block)),
-            unquote(opts)
-          )
-        )
-      end
-    else
-      quote do
-        defmodule unquote(opts[:module]) do
-          Module.eval_quoted(
-            __ENV__,
-            TypedStruct.__typedstruct__(
-              unquote(Macro.escape(block)),
-              unquote(opts)
-            )
-          )
+    ast = TypedStruct.__typedstruct__(block, opts)
+
+    case opts[:module] do
+      nil ->
+        quote do
+          # Create a lexical scope.
+          (fn -> unquote(ast) end).()
         end
-      end
+
+      module ->
+        quote do
+          defmodule unquote(module) do
+            unquote(ast)
+          end
+        end
     end
   end
 
   @doc false
   def __typedstruct__(block, opts) do
     quote do
-      Module.register_attribute(__MODULE__, :ts_plugins, accumulate: true)
-      Module.register_attribute(__MODULE__, :ts_fields, accumulate: true)
-      Module.register_attribute(__MODULE__, :ts_types, accumulate: true)
-      Module.register_attribute(__MODULE__, :ts_enforce_keys, accumulate: true)
-      Module.put_attribute(__MODULE__, :ts_enforce?, unquote(!!opts[:enforce]))
+      Enum.each(unquote(@accumulating_attrs), fn attr ->
+        Module.register_attribute(__MODULE__, attr, accumulate: true)
+      end)
 
-      # Create a scope to avoid leaks.
-      (fn ->
-         import TypedStruct
-         unquote(block)
-       end).()
+      Module.put_attribute(__MODULE__, :ts_enforce?, unquote(!!opts[:enforce]))
+      @before_compile {unquote(__MODULE__), :__plugin_callbacks__}
+
+      import TypedStruct
+      unquote(block)
 
       @enforce_keys @ts_enforce_keys
       defstruct @ts_fields
 
       TypedStruct.__type__(@ts_types, unquote(opts))
-
-      Enum.each(@ts_plugins, fn {plugin, plugin_opts} ->
-        if {:after_definition, 1} in plugin.__info__(:functions) do
-          Module.eval_quoted(__MODULE__, plugin.after_definition(plugin_opts))
-        end
-      end)
-
-      Module.delete_attribute(__MODULE__, :ts_enforce?)
-      Module.delete_attribute(__MODULE__, :ts_enforce_keys)
-      Module.delete_attribute(__MODULE__, :ts_types)
-      Module.delete_attribute(__MODULE__, :ts_plugins)
     end
   end
 
@@ -180,31 +170,14 @@ defmodule TypedStruct do
       non-nullable
   """
   defmacro field(name, type, opts \\ []) do
-    quote do
-      TypedStruct.__field__(
-        __MODULE__,
-        unquote(name),
-        unquote(Macro.escape(type)),
-        unquote(opts)
-      )
-
-      Enum.each(@ts_plugins, fn {plugin, plugin_opts} ->
-        if {:field, 3} in plugin.__info__(:functions) do
-          Module.eval_quoted(
-            __MODULE__,
-            plugin.field(
-              unquote(name),
-              unquote(Macro.escape(type)),
-              unquote(opts) ++ plugin_opts
-            )
-          )
-        end
-      end)
+    quote bind_quoted: [name: name, type: Macro.escape(type), opts: opts] do
+      TypedStruct.__field__(name, type, opts, __ENV__)
     end
   end
 
   @doc false
-  def __field__(mod, name, type, opts) when is_atom(name) do
+  def __field__(name, type, opts, %Macro.Env{module: mod} = env)
+      when is_atom(name) do
     if mod |> Module.get_attribute(:ts_fields) |> Keyword.has_key?(name) do
       raise ArgumentError, "the field #{inspect(name)} is already set"
     end
@@ -220,15 +193,40 @@ defmodule TypedStruct do
     nullable? = !has_default? && !enforce?
 
     Module.put_attribute(mod, :ts_fields, {name, opts[:default]})
+    Module.put_attribute(mod, :ts_plugin_fields, {name, type, opts, env})
     Module.put_attribute(mod, :ts_types, {name, type_for(type, nullable?)})
     if enforce?, do: Module.put_attribute(mod, :ts_enforce_keys, name)
   end
 
-  def __field__(_mod, name, _type, _opts) do
+  def __field__(name, _type, _opts, _env) do
     raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
   end
 
   # Makes the type nullable if the key is not enforced.
   defp type_for(type, false), do: type
   defp type_for(type, _), do: quote(do: unquote(type) | nil)
+
+  @doc false
+  defmacro __plugin_callbacks__(%Macro.Env{module: module}) do
+    plugins = Module.get_attribute(module, :ts_plugins)
+    fields = Module.get_attribute(module, :ts_plugin_fields) |> Enum.reverse()
+
+    Enum.each(unquote(@attrs_to_delete), &Module.delete_attribute(module, &1))
+
+    fields_block =
+      for {plugin, plugin_opts} <- plugins,
+          {name, type, field_opts, env} <- fields do
+        plugin.field(name, type, field_opts ++ plugin_opts, env)
+      end
+
+    after_definition_block =
+      for {plugin, plugin_opts} <- plugins do
+        plugin.after_definition(plugin_opts)
+      end
+
+    quote do
+      unquote_splicing(fields_block)
+      unquote_splicing(after_definition_block)
+    end
+  end
 end

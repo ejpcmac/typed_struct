@@ -6,7 +6,7 @@
 [![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
 [![License](https://img.shields.io/hexpm/l/typed_struct.svg?style=flat)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)
 
-<!-- MDOC !-->
+<!-- @moduledoc -->
 
 TypedStruct is a library for defining structs with a type without writing
 boilerplate code.
@@ -88,7 +88,7 @@ Thanks to TypedStruct, this is now possible :)
 To use TypedStruct in your project, add this to your Mix dependencies:
 
 ```elixir
-{:typed_struct, "~> 0.2.1"}
+{:typed_struct, "~> 0.3.0"}
 ```
 
 If you do not plan to compile modules using TypedStruct at runtime, you can add
@@ -375,7 +375,8 @@ defmodule MyModule do
   end
 end
 ```
-<!-- MDOC !-->
+
+<!-- @moduledoc -->
 
 ## Initial roadmap
 
@@ -407,6 +408,6 @@ Before contributing to this project, please read the
 
 ## License
 
-Copyright © 2018-2021 Jean-Philippe Cugnet and Contributors
+Copyright © 2018-2022 Jean-Philippe Cugnet and Contributors
 
 This project is licensed under the [MIT license](./LICENSE.md).

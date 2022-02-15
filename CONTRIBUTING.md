@@ -3,9 +3,9 @@
 TypedStruct is written in [Elixir](https://elixir-lang.org).
 
 For branching management, this project uses
-[git-flow](https://github.com/petervanderdoes/gitflow-avh). The `main` branch
-is reserved for releases: the development process occurs on `develop` and
-feature branches. **Please never commit to main.**
+[git-flow](https://github.com/petervanderdoes/gitflow-avh). The `main` branch is
+reserved for releases: the development process occurs on `develop` and feature
+branches. **Please never commit to `main`.**
 
 You can easily set up a development environment featuring all the dependencies,
 including Elixir and `git-flow`, by using [Nix](https://nixos.org/nix/). This is
@@ -15,7 +15,7 @@ detailed below.
 
 ### Local repository
 
-1. Fork the repository
+1. Fork the repository.
 
 2. Clone your fork to a local repository:
 
@@ -26,7 +26,7 @@ detailed below.
 
         $ git remote add upstream https://github.com/ejpcmac/typed_struct.git
 
-4. Checkout to `develop`:
+4. Checkout `develop`:
 
         $ git checkout develop
 
@@ -77,14 +77,14 @@ run:
 
 ### Building the project
 
-1. Fetch the project dependencies and build the project:
+1. Fetch the project dependencies:
 
         $ cd typed_struct
-        $ mix do deps.get, compile
+        $ mix deps.get
 
-2. Launch the tests:
+2. Run the static analyzers:
 
-        $ mix test
+        $ mix check
 
 All the tests should pass.
 
@@ -92,7 +92,7 @@ All the tests should pass.
 
 To make a change, please use this workflow:
 
-1. Checkout to `develop` and apply the last upstream changes (use rebase, not
+1. Checkout `develop` and apply the last upstream changes (use rebase, not
     merge!):
 
         $ git checkout develop
@@ -116,9 +116,9 @@ To make a change, please use this workflow:
     `cover/excoveralls.html`):
 
         # Some work
-        $ git commit -am "My first change"
+        $ git commit -am "feat: my first change"
         # Some work
-        $ git commit -am "My second change"
+        $ git commit -am "refactor: my second change"
         ...
 
 4. When your feature is ready, feel free to use
@@ -156,3 +156,6 @@ Please format your code with `mix format` or your editor and follow
 
 All contributed code must be documented and functions must have typespecs. In
 general, take your inspiration from the existing code.
+
+Please name your commits using [Conventional
+Commits](https://www.conventionalcommits.org/en/v1.0.0/).

@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # This configuration is loaded before any dependency and is restricted to this
 # project. If another project depends on this project, this file won’t be loaded

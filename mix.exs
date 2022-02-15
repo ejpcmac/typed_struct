@@ -1,7 +1,7 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.3.0"
   @repo_url "https://github.com/ejpcmac/typed_struct"
 
   def project do
@@ -43,9 +43,9 @@ defmodule TypedStruct.MixProject do
   defp deps do
     [
       # Development and test dependencies
-      {:ex_check, "~> 0.11.0", only: :dev, runtime: false},
+      {:ex_check, "~> 0.14.0", only: :dev, runtime: false},
       {:credo, "~> 1.0", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.0-rc", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
       {:mix_test_watch, ">= 0.0.0", only: :test, runtime: false},
       {:ex_unit_notifier, ">= 0.0.0", only: :test, runtime: false},
@@ -111,8 +111,10 @@ defmodule TypedStruct.MixProject do
     with {rev, 0} <-
            System.cmd("git", ["rev-parse", "--short", "HEAD"],
              stderr_to_stdout: true
-           ) do
-      "-dev+" <> String.trim(rev)
+           ),
+         {status, 0} <- System.cmd("git", ["status", "--porcelain"]) do
+      status = if status == "", do: "", else: "-dirty"
+      "-dev+" <> String.trim(rev) <> status
     else
       _ -> "-dev"
     end

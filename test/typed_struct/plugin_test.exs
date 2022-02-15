@@ -1,6 +1,8 @@
 defmodule TypedStruct.PluginTest do
   use ExUnit.Case
 
+  import ExUnit.CaptureIO
+
   ############################################################################
   ##                               Test data                                ##
   ############################################################################
@@ -36,7 +38,7 @@ defmodule TypedStruct.PluginTest do
     end
 
     @impl true
-    def field(name, _type, opts) do
+    def field(name, _type, opts, _env) do
       quote do
         # Keep a list of the fields on which it has been called.
         Module.put_attribute(__MODULE__, :test_field_list, unquote(name))
@@ -58,7 +60,7 @@ defmodule TypedStruct.PluginTest do
         # Make the options inspectable.
         def plugin_after_definition_options, do: unquote(opts)
 
-        # Make the list of fields built by our field/3 callback inspectable.
+        # Make the list of fields built by our field/4 callback inspectable.
         def test_field_list, do: @test_field_list
 
         # If @enforce_keys is valid, it means the struct has been defined by
@@ -91,6 +93,12 @@ defmodule TypedStruct.PluginTest do
   ##                             Standard cases                             ##
   ############################################################################
 
+  test "all callbacks are optional to define" do
+    defmodule EmptyPlugin do
+      use TypedStruct.Plugin
+    end
+  end
+
   test "quoted code in init/1 is available in the typedstruct block" do
     assert TestStruct.call_function_from_plugin()
   end
@@ -103,15 +111,15 @@ defmodule TypedStruct.PluginTest do
     assert TestStruct.plugin_init_options() == [global: :global_value]
   end
 
-  test "field/3 is called on each field declaration" do
+  test "field/4 is called on each field declaration" do
     assert TestStruct.test_field_list() == [:another_field, :a_field]
   end
 
-  test "field/3 can inject code in the compiled module" do
+  test "field/4 can inject code in the compiled module" do
     assert TestStruct.function_defined_by_the_plugin_for(:a_field) == :a_field
   end
 
-  test "field/3 is called with both local and global options" do
+  test "field/4 is called with both local and global options" do
     assert TestStruct.options_for(:a_field) == [
              local: :local_value,
              global: :global_value
@@ -157,5 +165,26 @@ defmodule TypedStruct.PluginTest do
                      def call_function_from_plugin, do: function_from_plugin()
                    end
                  end
+  end
+
+  test "defining field/3 emits a deprecation warning" do
+    assert capture_io(:stderr, fn ->
+             defmodule PluginWithField3 do
+               use TypedStruct.Plugin
+
+               def field(_name, _type, _opts), do: nil
+             end
+           end) =~ "PluginWithField3 defines field/3, which is deprecated."
+  end
+
+  test "defining both field/3 and field/4 emits a compilation warning" do
+    assert capture_io(:stderr, fn ->
+             defmodule PluginWithField3And4 do
+               use TypedStruct.Plugin
+
+               def field(_name, _type, _opts), do: nil
+               def field(_name, _type, _opts, _env), do: nil
+             end
+           end) =~ "PluginWithField3And4 defines both field/3 and field/4"
   end
 end

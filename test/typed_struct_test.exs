@@ -51,8 +51,18 @@ defmodule TypedStructTest do
     end
   end
 
+  {:module, _name, bytecode_noalias, _exports} =
+    defmodule TestStructNoAlias do
+      use TypedStruct
+
+      typedstruct do
+        field :test, TestModule.TestSubModule.t()
+      end
+    end
+
   @bytecode bytecode
   @bytecode_opaque bytecode_opaque
+  @bytecode_noalias bytecode_noalias
 
   # Standard struct name used when comparing generated types.
   @standard_struct_name TypedStructTest.TestStruct
@@ -194,30 +204,42 @@ defmodule TypedStructTest do
     end
   end
 
+  test "aliases are properly resolved in types" do
+    {:module, _name, bytecode_actual, _exports} =
+      defmodule TestStructWithAlias do
+        use TypedStruct
+
+        typedstruct do
+          alias TestModule.TestSubModule
+
+          field :test, TestSubModule.t()
+        end
+      end
+
+    # Get both types and standardise them (remove line numbers and rename
+    # the second struct with the name of the first one).
+    type1 =
+      @bytecode_noalias
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStructNoAlias)
+
+    type2 =
+      bytecode_actual
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStructWithAlias)
+
+    assert type1 == type2
+  end
+
   ############################################################################
   ##                                Helpers                                 ##
   ############################################################################
 
-  @elixir_version System.version() |> Version.parse!()
-  @min_version Version.parse!("1.7.0-rc")
-
   # Extracts the first type from a module.
-  # NOTE: We define the function differently depending on the Elixir version to
-  # avoid compiler warnings.
-  if Version.compare(@elixir_version, @min_version) == :lt do
-    # API for Elixir 1.6 (TODO: Remove when 1.6 compatibility is dropped.)
-    defp extract_first_type(bytecode, type_keyword \\ :type) do
-      bytecode
-      |> Kernel.Typespec.beam_types()
-      |> Keyword.get(type_keyword)
-    end
-  else
-    # API for Elixir 1.7
-    defp extract_first_type(bytecode, type_keyword \\ :type) do
-      case Code.Typespec.fetch_types(bytecode) do
-        {:ok, types} -> Keyword.get(types, type_keyword)
-        _ -> nil
-      end
+  defp extract_first_type(bytecode, type_keyword \\ :type) do
+    case Code.Typespec.fetch_types(bytecode) do
+      {:ok, types} -> Keyword.get(types, type_keyword)
+      _ -> nil
     end
   end
 
