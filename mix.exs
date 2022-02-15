@@ -111,8 +111,10 @@ defmodule TypedStruct.MixProject do
     with {rev, 0} <-
            System.cmd("git", ["rev-parse", "--short", "HEAD"],
              stderr_to_stdout: true
-           ) do
-      "-dev+" <> String.trim(rev)
+           ),
+         {status, 0} <- System.cmd("git", ["status", "--porcelain"]) do
+      status = if status == "", do: "", else: "-dirty"
+      "-dev+" <> String.trim(rev) <> status
     else
       _ -> "-dev"
     end
