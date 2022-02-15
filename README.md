@@ -408,6 +408,6 @@ Before contributing to this project, please read the
 
 ## License
 
-Copyright © 2018-2021 Jean-Philippe Cugnet and Contributors
+Copyright © 2018-2022 Jean-Philippe Cugnet and Contributors
 
 This project is licensed under the [MIT license](./LICENSE.md).
