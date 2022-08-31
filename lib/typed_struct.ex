@@ -35,6 +35,7 @@ defmodule TypedStruct do
       individual fields.
     * `opaque` - if set to true, creates an opaque type for the struct.
     * `module` - if set, creates the struct in a submodule named `module`.
+    * `parameters` - if set, adds these parameters to the generated `t()`.
 
   ## Examples
 
@@ -74,6 +75,42 @@ defmodule TypedStruct do
           field :field_four, atom(), default: :hey
         end
       end
+
+  You can also add type parameters:
+
+      defmodule RepairOrder do
+        use TypedStruct
+
+        @type new :: %{status: :new}
+        @type in_progress :: %{status: :in_progress, progress: integer()}
+        @type completed :: %{status: :completed}
+
+        typedstruct parameters: [state] do
+          field :state, state()
+          customer: String.t()
+        end
+
+        @spec new(String.t()) :: t(new())
+        def new(customer) do
+          %{state: %{status: :new}, customer: customer}
+        end
+
+        @spec start_repair(t(new())) :: t(in_progress())
+        def start_repair(order) do
+          put_in(order.state, %{status: :in_progress, progress: 0})
+        end
+
+        @spec advance_repair(t(in_progress()), integer()) :: t(in_progress())
+        def advance_repair(order, progress) do
+          put_in(order.state.progress, progress)
+        end
+
+        @spec finish_repair(t(in_progress())) :: t(completed())
+        def finish_repair(order) do
+          put_in(order.state, %{status: :completed})
+        end
+      end
+
   """
   defmacro typedstruct(opts \\ [], do: block) do
     ast = TypedStruct.__typedstruct__(block, opts)
@@ -116,13 +153,19 @@ defmodule TypedStruct do
 
   @doc false
   defmacro __type__(types, opts) do
+    type_parameters = Keyword.get(opts, :parameters, [])
+
     if Keyword.get(opts, :opaque, false) do
-      quote bind_quoted: [types: types] do
-        @opaque t() :: %__MODULE__{unquote_splicing(types)}
+      quote bind_quoted: [types: types, type_parameters: type_parameters] do
+        @opaque t(unquote_splicing(type_parameters)) :: %__MODULE__{
+                  unquote_splicing(types)
+                }
       end
     else
-      quote bind_quoted: [types: types] do
-        @type t() :: %__MODULE__{unquote_splicing(types)}
+      quote bind_quoted: [types: types, type_parameters: type_parameters] do
+        @type t(unquote_splicing(type_parameters)) :: %__MODULE__{
+                unquote_splicing(types)
+              }
       end
     end
   end

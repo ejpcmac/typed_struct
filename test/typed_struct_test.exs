@@ -60,9 +60,21 @@ defmodule TypedStructTest do
       end
     end
 
+  {:module, _name, bytecode_parameterized, _exports} =
+    defmodule ParameterizedTestStruct do
+      use TypedStruct
+
+      typedstruct parameters: [a, b] do
+        field :a, a
+        field :b, b | nil
+        field :c, integer()
+      end
+    end
+
   @bytecode bytecode
   @bytecode_opaque bytecode_opaque
   @bytecode_noalias bytecode_noalias
+  @bytecode_parameterized bytecode_parameterized
 
   # Standard struct name used when comparing generated types.
   @standard_struct_name TypedStructTest.TestStruct
@@ -152,6 +164,31 @@ defmodule TypedStructTest do
       bytecode_expected
       |> extract_first_type(:opaque)
       |> standardise(TypedStructTest.TestStruct3)
+
+    assert type1 == type2
+  end
+
+  test "generates parameterized types" do
+    # Define a second struct with the type expected for TestStruct.
+    {:module, _name, bytecode2, _exports} =
+      defmodule TestStruct4 do
+        defstruct [:a, :b, :c]
+
+        @type t(a, b) :: %__MODULE__{
+                a: a,
+                b: b | nil,
+                c: integer()
+              }
+      end
+
+    # Get both types and standardise them (remove line numbers and rename
+    # the second struct with the name of the first one).
+    type1 = @bytecode_parameterized |> extract_first_type() |> standardise()
+
+    type2 =
+      bytecode2
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStruct4)
 
     assert type1 == type2
   end
