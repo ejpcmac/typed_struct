@@ -33,7 +33,8 @@ defmodule TypedStruct do
     * `enforce` - if set to true, sets `enforce: true` to all fields by default.
       This can be overridden by setting `enforce: false` or a default value on
       individual fields.
-    * `opaque` - if set to true, creates an opaque type for the struct.
+    * `visibility` - one of the values: `:public` (default), `:private`, `:opaque`.
+    * `opaque` - (deprecated) if set to true, creates an opaque type for the struct.
     * `module` - if set, creates the struct in a submodule named `module`.
 
   ## Examples
@@ -46,6 +47,7 @@ defmodule TypedStruct do
           field :field_two, integer(), enforce: true
           field :field_three, boolean(), enforce: true
           field :field_four, atom(), default: :hey
+          field :field_four, atom(), default: :hey
         end
       end
 
@@ -54,7 +56,7 @@ defmodule TypedStruct do
       defmodule MyStruct do
         use TypedStruct
 
-        typedstruct enforce: true do
+        typedstruct enforce: true, visibility: :private do
           field :field_one, String.t(), enforce: false
           field :field_two, integer()
           field :field_three, boolean()
@@ -116,14 +118,22 @@ defmodule TypedStruct do
 
   @doc false
   defmacro __type__(types, opts) do
-    if Keyword.get(opts, :opaque, false) do
-      quote bind_quoted: [types: types] do
-        @opaque t() :: %__MODULE__{unquote_splicing(types)}
+    default =
+      case Keyword.get(opts, :opaque) do
+        true -> :opaque
+        nil  -> :public
       end
-    else
-      quote bind_quoted: [types: types] do
-        @type t() :: %__MODULE__{unquote_splicing(types)}
-      end
+
+    case Keyword.get(opts, :visibility, default) do
+      :public  ->
+        quote bind_quoted: [types: types], do:
+          @type t() :: %__MODULE__{unquote_splicing(types)}
+      :opaque  ->
+        quote bind_quoted: [types: types], do:
+          @opaque t() :: %__MODULE__{unquote_splicing(types)}
+      :private ->
+        quote bind_quoted: [types: types], do:
+          @typep t() :: %__MODULE__{unquote_splicing(types)}
     end
   end
 
