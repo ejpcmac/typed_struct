@@ -5,7 +5,7 @@ defmodule TypedStruct do
              |> String.split("<!-- @moduledoc -->")
              |> Enum.fetch!(1)
 
-  @accumulating_attrs [
+  @common_accumulating_attrs [
     :ts_plugins,
     :ts_plugin_fields,
     :ts_fields,
@@ -13,12 +13,16 @@ defmodule TypedStruct do
     :ts_enforce_keys
   ]
 
-  @attrs_to_delete [:ts_enforce? | @accumulating_attrs]
+  @struct_accumulating_attrs @common_accumulating_attrs ++ [:ts_enforce_keys]
+  @record_accumulating_attrs @common_accumulating_attrs
+
+  @attrs_to_delete [:ts_enforce? | @struct_accumulating_attrs]
 
   @doc false
   defmacro __using__(_) do
     quote do
-      import TypedStruct, only: [typedstruct: 1, typedstruct: 2]
+      import TypedStruct,
+        only: [typedstruct: 1, typedstruct: 2, typedrecord: 2, typedrecord: 3]
     end
   end
 
@@ -95,10 +99,41 @@ defmodule TypedStruct do
     end
   end
 
+  @doc """
+  Defines a typed record.
+
+  Inside a `typedrecord` block, each field is defined through the `field/2`
+  macro.
+
+  ## Options
+
+    * `tag` - if set, used as the `tag` parameter passed to `Record.defrecord/3`.
+    * `visibility` - one of the values: `:public` (default), `:private`, `:opaque`.
+    * `module` - if set, creates the struct in a submodule named `module`.
+  """
+  defmacro typedrecord(name, opts \\ [], do: block) when is_list(opts) do
+    ast = TypedStruct.__typedrecord__(name, block, opts)
+
+    case opts[:module] do
+      nil ->
+        quote do
+          # Create a lexical scope.
+          (fn -> unquote(ast) end).()
+        end
+
+      module ->
+        quote do
+          defmodule unquote(module) do
+            unquote(ast)
+          end
+        end
+    end
+  end
+
   @doc false
   def __typedstruct__(block, opts) do
     quote do
-      Enum.each(unquote(@accumulating_attrs), fn attr ->
+      Enum.each(unquote(@struct_accumulating_attrs), fn attr ->
         Module.register_attribute(__MODULE__, attr, accumulate: true)
       end)
 
@@ -111,7 +146,31 @@ defmodule TypedStruct do
       @enforce_keys @ts_enforce_keys
       defstruct @ts_fields
 
-      TypedStruct.__type__(@ts_types, unquote(opts))
+      TypedStruct.__struct_type__(@ts_types, unquote(opts))
+    end
+  end
+
+  @doc false
+  def __typedrecord__(name, block, opts) do
+    tag = Keyword.get(opts, :tag, name)
+
+    quote do
+      Enum.each(unquote(@record_accumulating_attrs), fn attr ->
+        Module.register_attribute(__MODULE__, attr, accumulate: true)
+      end)
+
+      import TypedStruct
+      require Record
+
+      unquote(block)
+      Record.defrecord(unquote(name), unquote(tag), Enum.reverse(@ts_fields))
+
+      TypedStruct.__record_type__(
+        @ts_types,
+        unquote(opts),
+        unquote(name),
+        unquote(tag)
+      )
     end
   end
 
@@ -123,21 +182,46 @@ defmodule TypedStruct do
   end
 
   @doc false
-  defmacro __type__(types, opts) do
+  defmacro __struct_type__(types, opts) do
     case TypedStruct.__visibility__(opts) do
       :public ->
         quote bind_quoted: [types: types] do
-          @type(t() :: %__MODULE__{unquote_splicing(types)})
+          @type t() :: %__MODULE__{unquote_splicing(types)}
         end
 
       :opaque ->
         quote bind_quoted: [types: types] do
-          @opaque(t() :: %__MODULE__{unquote_splicing(types)})
+          @opaque t() :: %__MODULE__{unquote_splicing(types)}
         end
 
       :private ->
         quote bind_quoted: [types: types] do
-          @typep(t() :: %__MODULE__{unquote_splicing(types)})
+          @typep t() :: %__MODULE__{unquote_splicing(types)}
+        end
+    end
+  end
+
+  @doc false
+  defmacro __record_type__(types, opts, name, tag) do
+    types =
+      quote do
+        :lists.reverse(for {_, v} <- unquote(types), do: v)
+      end
+
+    case TypedStruct.__visibility__(opts) do
+      :public ->
+        quote bind_quoted: [name: name, tag: tag, types: types] do
+          @type unquote(name)() :: {unquote(tag), unquote_splicing(types)}
+        end
+
+      :opaque ->
+        quote bind_quoted: [name: name, tag: tag, types: types] do
+          @opaque unquote(name)() :: {unquote(tag), unquote_splicing(types)}
+        end
+
+      :private ->
+        quote bind_quoted: [name: name, tag: tag, types: types] do
+          @typep unquote(name)() :: {unquote(tag), unquote_splicing(types)}
         end
     end
   end

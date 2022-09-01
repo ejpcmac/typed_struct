@@ -133,6 +133,21 @@ end
 Each field is defined through the
 [`field/2`](https://hexdocs.pm/typed_struct/TypedStruct.html#field/2) macro.
 
+To define a record use the `typedrecord` block:
+
+```elixir
+defmodule Person do
+  use TypedStruct
+
+  typedrecord :person do
+    @typedoc "A person"
+
+    field :name, String.t(),
+    field :age,  non_neg_integer(), default: 0
+  end
+end
+```
+
 ### Options
 
 If you want to enforce all the keys by default, you can do:
@@ -247,6 +262,8 @@ defmodule MyStruct do
   end
 end
 ```
+
+Presently plugins are not supported by the `typedrecord` block.
 
 ### Some available plugins
 
@@ -384,6 +401,29 @@ defmodule MyModule do
             field: term() | nil
           }
   end
+end
+```
+
+To define a typed record, the following definition of the `typedrecord`:
+
+```elixir
+defmodule Person do
+  use TypedStruct
+  typedrecord :person do
+    @typedoc "A person"
+    field :name, String.t()
+    field :age,  non_neg_integer(), default: 0
+  end
+end
+```
+
+becomes:
+
+```elixir
+defmodule Person do
+  use Record
+  Record.defrecord(:person, name: nil, age: 0)
+  @type person :: {:person, String.t()|nil, non_neg_integer()}
 end
 ```
 
