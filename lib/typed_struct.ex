@@ -33,8 +33,9 @@ defmodule TypedStruct do
     * `enforce` - if set to true, sets `enforce: true` to all fields by default.
       This can be overridden by setting `enforce: false` or a default value on
       individual fields.
-    * `opaque` - if set to true, creates an opaque type for the struct.
+    * `visibility` - one of the values: `:public` (default), `:private`, `:opaque`.
     * `module` - if set, creates the struct in a submodule named `module`.
+    * `opaque` - (deprecated) if set to true, creates an opaque type for the struct.
 
   ## Examples
 
@@ -115,15 +116,29 @@ defmodule TypedStruct do
   end
 
   @doc false
+  def __visibility__(opts) do
+    # For backward compatibility support `opaque: true` (default to :public)
+    Keyword.get(opts, :visibility) ||
+      ((Keyword.get(opts, :opaque) == true && :opaque) || :public)
+  end
+
+  @doc false
   defmacro __type__(types, opts) do
-    if Keyword.get(opts, :opaque, false) do
-      quote bind_quoted: [types: types] do
-        @opaque t() :: %__MODULE__{unquote_splicing(types)}
-      end
-    else
-      quote bind_quoted: [types: types] do
-        @type t() :: %__MODULE__{unquote_splicing(types)}
-      end
+    case TypedStruct.__visibility__(opts) do
+      :public ->
+        quote bind_quoted: [types: types] do
+          @type t() :: %__MODULE__{unquote_splicing(types)}
+        end
+
+      :opaque ->
+        quote bind_quoted: [types: types] do
+          @opaque t() :: %__MODULE__{unquote_splicing(types)}
+        end
+
+      :private ->
+        quote bind_quoted: [types: types] do
+          @typep t() :: %__MODULE__{unquote_splicing(types)}
+        end
     end
   end
 

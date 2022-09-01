@@ -154,15 +154,26 @@ defmodule MyStruct do
   end
 end
 ```
-
-You can also generate an opaque type for the struct:
+You can also generate an opaque or private type for the struct by using
+the `visibility: :opaque | :private | :public` option:
 
 ```elixir
 defmodule MyOpaqueStruct do
   use TypedStruct
 
   # Generate an opaque type for the struct.
-  typedstruct opaque: true do
+  typedstruct visibility: :opaque do
+    field :name, String.t()
+  end
+end
+```
+
+```elixir
+defmodule MyPrivateStruct do
+  use TypedStruct
+
+  # Generate a private type for the struct.
+  typedstruct visibility: :private do
     field :name, String.t()
   end
 end
