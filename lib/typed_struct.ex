@@ -97,7 +97,7 @@ defmodule TypedStruct do
 
         @spec start_repair(t(new())) :: t(in_progress())
         def start_repair(order) do
-          put_in(order.state, %{status: :in_progress, progress: 0})
+          %{order | state: %{status: :in_progress, progress: 0}}
         end
 
         @spec advance_repair(t(in_progress()), integer()) :: t(in_progress())
@@ -107,7 +107,7 @@ defmodule TypedStruct do
 
         @spec finish_repair(t(in_progress())) :: t(completed())
         def finish_repair(order) do
-          put_in(order.state, %{status: :completed})
+          %{order | state: %{status: :completed}}
         end
       end
 
