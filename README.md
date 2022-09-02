@@ -81,6 +81,30 @@ end
 
 Thanks to TypedStruct, this is now possible :)
 
+This library can also be used for defining typed records:
+
+```elixir
+defmodule Person do
+  use TypedStruct
+
+  typedrecord :person do
+    @typedoc "A person"
+
+    field :name, String.t(),
+    field :age,  non_neg_integer(), default: 0
+  end
+end
+```
+
+The code above will be expanded to:
+
+```elixir
+defmodule Person do
+  Record.defrecord(:person, name: nil, age: 0)
+  @type person :: {:person, String.t, non_neg_integer}
+end
+```
+
 ## Usage
 
 ### Setup
@@ -154,8 +178,31 @@ defmodule MyStruct do
   end
 end
 ```
+You can also generate an opaque or private type for the struct:
 
-You can also generate an opaque type for the struct:
+```elixir
+defmodule MyOpaqueStruct do
+  use TypedStruct
+
+  # Generate an opaque type for the struct.
+  typedstruct visibility: :opaque do
+    field :name, String.t()
+  end
+end
+```
+
+```elixir
+defmodule MyPrivateStruct do
+  use TypedStruct
+
+  # Generate a private type for the struct.
+  typedstruct visibility: :private do
+    field :name, String.t()
+  end
+end
+```
+
+The opaque and private types can also be defined using `opaque` or `private` property:
 
 ```elixir
 defmodule MyOpaqueStruct do

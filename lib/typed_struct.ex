@@ -18,7 +18,8 @@ defmodule TypedStruct do
   @doc false
   defmacro __using__(_) do
     quote do
-      import TypedStruct, only: [typedstruct: 1, typedstruct: 2]
+      import TypedStruct,
+        only: [typedstruct: 1, typedstruct: 2, typedrecord: 2, typedrecord: 3]
     end
   end
 
@@ -30,12 +31,13 @@ defmodule TypedStruct do
 
   ## Options
 
-    * `enforce` - if set to true, sets `enforce: true` to all fields by default.
-      This can be overridden by setting `enforce: false` or a default value on
-      individual fields.
+    * `enforce`    - if set to true, sets `enforce: true` to all fields by default.
+                     This can be overridden by setting `enforce: false` or a default value on
+                     individual fields.
     * `visibility` - one of the values: `:public` (default), `:private`, `:opaque`.
-    * `opaque` - (deprecated) if set to true, creates an opaque type for the struct.
-    * `module` - if set, creates the struct in a submodule named `module`.
+    * `opaque`     - if set to true, creates an opaque  type for the struct.
+    * `private`    - if set to true, creates an private type for the struct.
+    * `module`     - if set, creates the struct in a submodule named `module`.
 
   ## Examples
 
@@ -96,6 +98,63 @@ defmodule TypedStruct do
     end
   end
 
+  @doc """
+  Defines a typed record.
+
+  Inside a `typedrecord` block, each field is defined through the `field/2`
+  macro.
+
+  ## Options
+
+    * `tag`        - if set, used as the second parameter passed to `Record.defrecord/3`.
+    * `visibility` - one of the values: `:public` (default), `:private`, `:opaque`.
+    * `opaque`     - if set to true, creates an opaque  type for the struct.
+    * `private`    - if set to true, creates an private type for the struct.
+    * `module`     - if set, creates the struct in a submodule named `module`.
+
+  ## Examples
+
+  ```
+  defmodule MyStruct do
+    use TypedStruct
+
+    typedrecord :user do
+      field :field_one,   String.t(), default: "abc"
+      field :field_two,   integer(),  default: 1
+      field :field_three, boolean()
+    end
+  end
+  ```
+
+  The example above is equivalent to:
+
+  ```
+  defmodule MyStruct do
+    Record.defrecord(:user, field_one: "abc", field_two: 1, field_three: nil)
+
+    @type user :: {:user, String.t, integer, boolean}
+  end
+  ```
+  """
+  defmacro typedrecord(name, opts \\ [], do: block) when is_list(opts) do
+    ast = TypedStruct.__typedrecord__(name, block, opts)
+
+    case opts[:module] do
+      nil ->
+        quote do
+          # Create a lexical scope.
+          (fn -> unquote(ast) end).()
+        end
+
+      module ->
+        quote do
+          defmodule unquote(module) do
+            unquote(ast)
+          end
+        end
+    end
+  end
+
   @doc false
   def __typedstruct__(block, opts) do
     quote do
@@ -117,23 +176,79 @@ defmodule TypedStruct do
   end
 
   @doc false
+  def __typedrecord__(name, block, opts) do
+    tag = Keyword.get(opts, :tag, name)
+
+    quote do
+      Enum.each(unquote(@accumulating_attrs), fn attr ->
+        Module.register_attribute(__MODULE__, attr, accumulate: true)
+      end)
+
+      import TypedStruct
+      require Record
+
+      unquote(block)
+      Record.defrecord(unquote(name), unquote(tag), :lists.reverse(@ts_fields))
+
+      TypedStruct.__rectype__(
+        @ts_types,
+        unquote(opts),
+        unquote(name),
+        unquote(tag)
+      )
+    end
+  end
+
+  @doc false
+  def __visibility__(opts) do
+    Keyword.get(opts, :visibility) ||
+      Enum.reduce_while([:opaque, :private, :public], :public, fn x, a ->
+        case Keyword.get(opts, x) do
+          true -> {:halt, x}
+          nil -> {:cont, a}
+        end
+      end)
+  end
+
+  @doc false
   defmacro __type__(types, opts) do
-    default =
-      case Keyword.get(opts, :opaque) do
-        true -> :opaque
-        nil  -> :public
+    case TypedStruct.__visibility__(opts) do
+      :public ->
+        quote bind_quoted: [types: types],
+              do: @type(t() :: %__MODULE__{unquote_splicing(types)})
+
+      :opaque ->
+        quote bind_quoted: [types: types],
+              do: @opaque(t() :: %__MODULE__{unquote_splicing(types)})
+
+      :private ->
+        quote bind_quoted: [types: types],
+              do: @typep(t() :: %__MODULE__{unquote_splicing(types)})
+    end
+  end
+
+  @doc false
+  defmacro __rectype__(types, opts, name, tag) do
+    types =
+      quote do
+        :lists.reverse(for {_, v} <- unquote(types), do: v)
       end
 
-    case Keyword.get(opts, :visibility, default) do
-      :public  ->
-        quote bind_quoted: [types: types], do:
-          @type t() :: %__MODULE__{unquote_splicing(types)}
-      :opaque  ->
-        quote bind_quoted: [types: types], do:
-          @opaque t() :: %__MODULE__{unquote_splicing(types)}
+    case TypedStruct.__visibility__(opts) do
+      :public ->
+        quote bind_quoted: [types: types, name: name, tag: tag] do
+          @type unquote(name)() :: {unquote(tag), unquote_splicing(types)}
+        end
+
+      :opaque ->
+        quote bind_quoted: [types: types, name: name, tag: tag] do
+          @opaque unquote(name)() :: {unquote(tag), unquote_splicing(types)}
+        end
+
       :private ->
-        quote bind_quoted: [types: types], do:
-          @typep t() :: %__MODULE__{unquote_splicing(types)}
+        quote bind_quoted: [types: types, name: name, tag: tag] do
+          @typep unquote(name)() :: {unquote(tag), unquote_splicing(types)}
+        end
     end
   end
 

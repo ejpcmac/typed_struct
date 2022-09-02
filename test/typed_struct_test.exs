@@ -60,7 +60,8 @@ defmodule TypedStructTest do
         field :int, integer()
       end
 
-      @opaque tt :: t  # Needed so that the compiler doesn't remove unused private type t()
+      # Needed so that the compiler doesn't remove unused private type t()
+      @opaque tt :: t
     end
 
   defmodule EnforcedTypedStruct do
@@ -157,7 +158,10 @@ defmodule TypedStructTest do
 
     # Get both types and standardise them (remove line numbers and rename
     # the second struct with the name of the first one).
-    type1 = @bytecode1 |> extract_first_type() |> standardise(TypedStructTest.TestStructPublic1)
+    type1 =
+      @bytecode1
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStructPublic1)
 
     type2 =
       bytecode2
@@ -166,7 +170,10 @@ defmodule TypedStructTest do
 
     assert type1 == type2
 
-    type3 = @bytecode2 |> extract_first_type() |> standardise(TypedStructTest.TestStructPublic2)
+    type3 =
+      @bytecode2
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStructPublic2)
 
     assert type3 == type2
   end
@@ -210,7 +217,7 @@ defmodule TypedStructTest do
       defmodule TestStruct3 do
         defstruct [:int]
 
-        @typep  t  :: %__MODULE__{int: integer() | nil}
+        @typep t :: %__MODULE__{int: integer() | nil}
         @opaque t2 :: t
       end
 
@@ -318,7 +325,7 @@ defmodule TypedStructTest do
 
   # Standardises a type (removes line numbers and renames the struct to the
   # standard struct name).
-  defp standardise(type_info, struct \\ @standard_struct_name)
+  defp standardise(type_info, struct)
 
   defp standardise({name, type, params}, struct) when is_tuple(type),
     do: {name, standardise(type, struct), params}
