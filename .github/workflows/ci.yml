@@ -37,9 +37,9 @@ jobs:
             otp: "24.0"
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v2
       - name: Install Elixir/OTP
-        uses: erlef/setup-beam@v1.10.0
+        uses: erlef/setup-beam@v1
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
