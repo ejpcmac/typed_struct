@@ -7,7 +7,7 @@ let
 in
 
 mkShell {
-  buildInputs = [ elixir git gitAndTools.gitflow ]
+  buildInputs = [ elixir git gitAndTools.gitflow commitlint ]
     ++ optional stdenv.isLinux libnotify # For ExUnit Notifier on Linux.
     ++ optional stdenv.isLinux inotify-tools # For file_system on Linux.
     ++ optional stdenv.isDarwin terminal-notifier # For ExUnit Notifier on macOS.
