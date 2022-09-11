@@ -7,9 +7,9 @@ on:
       - develop
       - release/*
       - feature/*
-    pull_request:
-      branches:
-        - develop
+  pull_request:
+    branches:
+      - develop
 
 jobs:
   check:
