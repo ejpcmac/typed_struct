@@ -35,6 +35,8 @@ jobs:
             otp: "23.3"
           - elixir: "1.13"
             otp: "24.0"
+          - elixir: "1.14"
+            otp: "24.0"
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2.4.0
