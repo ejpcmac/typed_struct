@@ -10,6 +10,12 @@ on:
   pull_request:
     branches:
       - develop
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
 
 jobs:
   commitlint:
