@@ -45,12 +45,12 @@ jobs:
             otp: "23.3"
           - elixir: "1.13"
             otp: "24.3"
-          - elixir: "1.14"
-            otp: "23.3"
-          - elixir: "1.14"
-            otp: "24.3"
-          - elixir: "1.14"
-            otp: "25.0"
+          # - elixir: "1.14"
+          #   otp: "23.3"
+          # - elixir: "1.14"
+          #   otp: "24.3"
+          # - elixir: "1.14"
+          #   otp: "25.0"
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
