@@ -8,6 +8,7 @@ defmodule TypedStruct do
   @accumulating_attrs [
     :ts_plugins,
     :ts_plugin_fields,
+    :ts_parameters,
     :ts_fields,
     :ts_types,
     :ts_enforce_keys
@@ -74,6 +75,18 @@ defmodule TypedStruct do
           field :field_four, atom(), default: :hey
         end
       end
+
+  You can also add type parameters:
+
+      defmodule MyModule do
+        use TypedStruct
+
+        typedstruct do
+          parameter :parameter
+
+          field :field, parameter
+        end
+      end
   """
   defmacro typedstruct(opts \\ [], do: block) do
     ast = TypedStruct.__typedstruct__(block, opts)
@@ -110,19 +123,23 @@ defmodule TypedStruct do
       @enforce_keys @ts_enforce_keys
       defstruct @ts_fields
 
-      TypedStruct.__type__(@ts_types, unquote(opts))
+      TypedStruct.__type__(@ts_parameters, @ts_types, unquote(opts))
     end
   end
 
   @doc false
-  defmacro __type__(types, opts) do
+  defmacro __type__(parameters, types, opts) do
     if Keyword.get(opts, :opaque, false) do
-      quote bind_quoted: [types: types] do
-        @opaque t() :: %__MODULE__{unquote_splicing(types)}
+      quote bind_quoted: [parameters: parameters, types: types] do
+        @opaque t(unquote_splicing(parameters)) :: %__MODULE__{
+                  unquote_splicing(types)
+                }
       end
     else
-      quote bind_quoted: [types: types] do
-        @type t() :: %__MODULE__{unquote_splicing(types)}
+      quote bind_quoted: [parameters: parameters, types: types] do
+        @type t(unquote_splicing(parameters)) :: %__MODULE__{
+                unquote_splicing(types)
+              }
       end
     end
   end
@@ -156,6 +173,22 @@ defmodule TypedStruct do
   end
 
   @doc """
+  Defines a type parameter for a typed struct.
+
+  ## Example
+
+      # A type parameter named int
+      parameter :int
+
+      field :number, int # not int()
+  """
+  defmacro parameter(name) do
+    quote bind_quoted: [name: name] do
+      TypedStruct.__parameter__(name, __ENV__)
+    end
+  end
+
+  @doc """
   Defines a field in a typed struct.
 
   ## Example
@@ -173,6 +206,16 @@ defmodule TypedStruct do
     quote bind_quoted: [name: name, type: Macro.escape(type), opts: opts] do
       TypedStruct.__field__(name, type, opts, __ENV__)
     end
+  end
+
+  @doc false
+  def __parameter__(name, %Macro.Env{module: mod}) when is_atom(name) do
+    Module.put_attribute(mod, :ts_parameters, Macro.var(name, mod))
+  end
+
+  def __parameter__(name, _env) do
+    raise ArgumentError,
+          "a parameter name must be an atom, got #{inspect(name)}"
   end
 
   @doc false

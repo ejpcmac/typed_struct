@@ -182,6 +182,34 @@ defmodule MyModule do
 end
 ```
 
+You can also add type parameters:
+```elixir
+defmodule User do
+  use TypedStruct
+
+  typedstruct do
+    parameter :state
+
+    field :state, state, enforce: true
+    field :name, String.t()
+  end
+end
+```
+
+this equals to:
+```elixir
+defmodule User do
+  @enforce_keys [:state]
+  defstruct state: nil,
+            name: nil
+
+  @type t(state) :: %__MODULE__{
+          state: state,
+          name: String.t() | nil
+        }
+end
+```
+
 ### Documentation
 
 To add a `@typedoc` to the struct type, just add the attribute in the
