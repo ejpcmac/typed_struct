@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
 # SPDX-FileCopyrightText: 2022 Jonathan Chukinas <chukinas@gmail.com>
 # SPDX-FileCopyrightText: 2022 Balázs Jávorszky <javorszky.balazs@estyle.hu>
+# SPDX-FileCopyrightText: 2022 Phil Chen <06fahchen@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -15,6 +16,7 @@ defmodule TypedStruct do
   @accumulating_attrs [
     :ts_plugins,
     :ts_plugin_fields,
+    :ts_parameters,
     :ts_fields,
     :ts_types,
     :ts_docs,
@@ -70,6 +72,18 @@ defmodule TypedStruct do
         end
       end
 
+  You can also add type parameters:
+
+      defmodule MyModule do
+        use TypedStruct
+
+        typedstruct do
+          parameter :type
+
+          field :field, type
+        end
+      end
+
   You can create the struct in a submodule instead:
 
       defmodule MyModule do
@@ -119,7 +133,12 @@ defmodule TypedStruct do
       defstruct @ts_fields
 
       TypedStruct.__typedoc__(@ts_docs)
-      TypedStruct.__type__(@ts_types, unquote(opts))
+
+      TypedStruct.__type__(
+        Enum.reverse(@ts_parameters),
+        @ts_types,
+        unquote(opts)
+      )
     end
   end
 
@@ -159,14 +178,18 @@ defmodule TypedStruct do
   end
 
   @doc false
-  defmacro __type__(types, opts) do
+  defmacro __type__(parameters, types, opts) do
     if Keyword.get(opts, :opaque, false) do
-      quote bind_quoted: [types: types] do
-        @opaque t() :: %__MODULE__{unquote_splicing(types)}
+      quote bind_quoted: [parameters: parameters, types: types] do
+        @opaque t(unquote_splicing(parameters)) :: %__MODULE__{
+                  unquote_splicing(types)
+                }
       end
     else
-      quote bind_quoted: [types: types] do
-        @type t() :: %__MODULE__{unquote_splicing(types)}
+      quote bind_quoted: [parameters: parameters, types: types] do
+        @type t(unquote_splicing(parameters)) :: %__MODULE__{
+                unquote_splicing(types)
+              }
       end
     end
   end
@@ -197,6 +220,35 @@ defmodule TypedStruct do
       require unquote(plugin)
       unquote(plugin).init(unquote(opts))
     end
+  end
+
+  @doc """
+  Defines a type parameter for the currently defined struct.
+
+  ## Example
+
+      typedstruct do
+        # Defines a type parameter named `type_param`
+        parameter :type_param
+
+        # The type parameter can be used as a type in the `field` macro.
+        field :a_field, type_param
+      end
+  """
+  defmacro parameter(name) do
+    quote bind_quoted: [name: name] do
+      TypedStruct.__parameter__(name, __ENV__)
+    end
+  end
+
+  @doc false
+  def __parameter__(name, %Macro.Env{module: mod}) when is_atom(name) do
+    Module.put_attribute(mod, :ts_parameters, Macro.var(name, mod))
+  end
+
+  def __parameter__(name, _env) do
+    raise ArgumentError,
+          "the name of a type parameter must be an atom, got #{inspect(name)}"
   end
 
   @doc """
@@ -254,7 +306,7 @@ defmodule TypedStruct do
   # Checks whether some value looks like Elixir AST.
   defp ast?({name, meta, params})
        when (is_atom(name) or is_tuple(name)) and is_list(meta) and
-              is_list(params),
+              (is_list(params) or is_nil(params)),
        do: true
 
   defp ast?(_), do: false

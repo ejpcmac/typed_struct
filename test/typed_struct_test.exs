@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2018, 2020, 2022, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
 # SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
+# SPDX-FileCopyrightText: 2022 Phil Chen <06fahchen@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -75,6 +76,22 @@ defmodule TypedStructTest do
       TestStruct.Opaque.Expected
       |> extract_first_type(:opaque)
       |> standardise(TestStruct.Opaque.Expected)
+
+    assert type1 == type2
+  end
+
+  test "generates a parameterized type for the struct" do
+    # Get both types and standardise them (remove line numbers and rename
+    # the second struct with the name of the first one).
+    type1 =
+      TestStruct.WithParameter
+      |> extract_first_type()
+      |> standardise(TestStruct.WithParameter)
+
+    type2 =
+      TestStruct.WithParameter.Expected
+      |> extract_first_type()
+      |> standardise(TestStruct.WithParameter.Expected)
 
     assert type1 == type2
   end
@@ -163,6 +180,21 @@ defmodule TypedStructTest do
            end) =~ "undefined function field/2"
   end
 
+  test "the name of a type parameter must be an atom" do
+    assert_raise ArgumentError,
+                 "the name of a type parameter must be an atom, got 3",
+                 fn ->
+                   defmodule InvalidStruct do
+                     use TypedStruct
+
+                     typedstruct do
+                       parameter 3
+                       field :field, term()
+                     end
+                   end
+                 end
+  end
+
   test "the name of a field must be an atom" do
     assert_raise ArgumentError, "a field name must be an atom, got 3", fn ->
       defmodule InvalidStruct do
@@ -237,14 +269,20 @@ defmodule TypedStructTest do
   defp standardise({:type, _, type, params}, struct),
     do: {:type, :line, type, standardise(params, struct)}
 
+  defp standardise({:user_type, _, type, params}, struct),
+    do: {:user_type, :line, type, standardise(params, struct)}
+
   defp standardise({:remote_type, _, params}, struct),
     do: {:remote_type, :line, standardise(params, struct)}
 
   defp standardise({:atom, _, struct}, struct),
     do: {:atom, :line, TestStruct}
 
+  defp standardise({:var, _, name}, _),
+    do: {:var, :line, name}
+
   defp standardise({name, type, params}, struct) when is_tuple(type),
-    do: {name, standardise(type, struct), params}
+    do: {name, standardise(type, struct), standardise(params, struct)}
 
   defp standardise({type, _, literal}, _struct),
     do: {type, :line, literal}

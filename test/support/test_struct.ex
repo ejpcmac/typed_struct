@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2018, 2020, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
 # SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
+# SPDX-FileCopyrightText: 2022 Phil Chen <06fahchen@gmail.com>
 # SPDX-FileCopyrightText: 2023 Serge Aleynikov <saleyn@gmail.com>
 #
 # SPDX-License-Identifier: MIT
@@ -79,6 +80,37 @@ defmodule TypedStruct.TestStruct do
       @opaque t() :: %__MODULE__{
                 int: integer() | nil
               }
+    end
+  end
+
+  defmodule WithParameter do
+    @moduledoc """
+    A struct with a parameterised type.
+    """
+    use TypedStruct
+
+    typedstruct do
+      parameter :t1
+      parameter :t2
+
+      field :field_t1, t1
+      field :field_t2, t2
+      field :enforced_field_t1, t1, enforce: true
+    end
+
+    defmodule Expected do
+      @moduledoc """
+      `WithParameter` but defined manually.
+      """
+
+      @enforce_keys [:enforced_field_t1]
+      defstruct [:field_t1, :field_t2, :enforced_field_t1]
+
+      @type t(t1, t2) :: %__MODULE__{
+              field_t1: t1 | nil,
+              field_t2: t2 | nil,
+              enforced_field_t1: t1
+            }
     end
   end
 
