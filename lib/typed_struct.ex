@@ -10,7 +10,8 @@ defmodule TypedStruct do
     :ts_plugin_fields,
     :ts_fields,
     :ts_types,
-    :ts_enforce_keys
+    :ts_enforce_keys,
+    :ts_comments
   ]
 
   @attrs_to_delete [:ts_enforce? | @accumulating_attrs]
@@ -110,6 +111,9 @@ defmodule TypedStruct do
       @enforce_keys @ts_enforce_keys
       defstruct @ts_fields
 
+      td = if Module.has_attribute?(__MODULE__, :typedoc), do: @typedoc, else: nil
+      TypedStruct.__typedoc_generator__(td, @ts_comments)
+
       TypedStruct.__type__(@ts_types, unquote(opts))
     end
   end
@@ -123,6 +127,21 @@ defmodule TypedStruct do
     else
       quote bind_quoted: [types: types] do
         @type t() :: %__MODULE__{unquote_splicing(types)}
+      end
+    end
+  end
+
+  @doc false
+  defmacro __typedoc_generator__(typedoc, comments) do
+    quote bind_quoted: [typedoc: typedoc, comments: comments] do
+      # If there are no comments we just leave it as it is
+      if comments != [] do
+        comments = comments |> Enum.reverse |> Enum.map(fn {x, c} -> "- `#{x}`: #{c}" end)
+        comments = if typedoc == nil, do: comments, else: [typedoc, "" | comments]
+        Module.delete_attribute(__MODULE__, :typedoc)
+        @typedoc """
+        #{Enum.join(comments, "\n")}
+        """
       end
     end
   end
@@ -168,6 +187,7 @@ defmodule TypedStruct do
     * `default` - sets the default value for the field
     * `enforce` - if set to true, enforces the field and makes its type
       non-nullable
+    * `doc` - short description for the field, that will be appended to the typedoc as well
   """
   defmacro field(name, type, opts \\ []) do
     quote bind_quoted: [name: name, type: Macro.escape(type), opts: opts] do
@@ -192,6 +212,9 @@ defmodule TypedStruct do
 
     nullable? = !has_default? && !enforce?
 
+    comment = opts[:doc]
+    if comment != nil,
+      do: Module.put_attribute(mod, :ts_comments, {name, comment})
     Module.put_attribute(mod, :ts_fields, {name, opts[:default]})
     Module.put_attribute(mod, :ts_plugin_fields, {name, type, opts, env})
     Module.put_attribute(mod, :ts_types, {name, type_for(type, nullable?)})
