@@ -93,6 +93,31 @@ defmodule TypedStruct.TestStruct do
     end
   end
 
+  defmodule SimpleTypedoc do
+    @moduledoc """
+    A typed struct with a `@typedoc`.
+    """
+    use TypedStruct
+
+    @typedoc "A typed struct"
+    typedstruct do
+      field :field, term()
+    end
+  end
+
+  defmodule DetailedTypedoc do
+    @moduledoc """
+    A typed struct with a `@typedoc`.
+    """
+    use TypedStruct
+
+    @typedoc "A typed struct"
+    typedstruct do
+      field :a_string, String.t(), doc: "just a series of letters"
+      field :an_int, integer(), doc: "some digits"
+    end
+  end
+
   defmodule Alias do
     @moduledoc """
     Structs for testing the use of aliases in types.
