@@ -20,6 +20,21 @@ defmodule TypedStructTest do
       def enforce_keys, do: @enforce_keys
     end
 
+  {:module, _name, bytecode_parameters, _exports} =
+    defmodule ParameterTestStruct do
+      use TypedStruct
+
+      @typep int() :: integer()
+
+      typedstruct do
+        parameter :str
+
+        field :int, int()
+        field :string, str
+        field :mandatory_string, str, enforce: true
+      end
+    end
+
   {:module, _name, bytecode_opaque, _exports} =
     defmodule OpaqueTestStruct do
       use TypedStruct
@@ -61,6 +76,7 @@ defmodule TypedStructTest do
     end
 
   @bytecode bytecode
+  @bytecode_parameters bytecode_parameters
   @bytecode_opaque bytecode_opaque
   @bytecode_noalias bytecode_noalias
 
@@ -126,6 +142,38 @@ defmodule TypedStructTest do
       bytecode2
       |> extract_first_type()
       |> standardise(TypedStructTest.TestStruct2)
+
+    assert type1 == type2
+  end
+
+  test "generates a parameterized type for the struct", context do
+    # Define a second struct with the type expected for ParameterTestStruct.
+    {:module, _name, bytecode2, _exports} =
+      defmodule ParameterTestStruct2 do
+        @typep int() :: integer()
+
+        @enforce_keys [:mandatory_string]
+
+        defstruct [:int, :string, :mandatory_string]
+
+        @type t(str) :: %__MODULE__{
+                int: int() | nil,
+                string: str | nil,
+                mandatory_string: str
+              }
+      end
+
+    # Get both types and standardise them (remove line numbers and rename
+    # the second struct with the name of the first one).
+    type1 =
+      @bytecode_parameters
+      |> extract_first_type()
+      |> standardise(TypedStructTest.ParameterTestStruct)
+
+    type2 =
+      bytecode2
+      |> extract_first_type()
+      |> standardise(TypedStructTest.ParameterTestStruct2)
 
     assert type1 == type2
   end
@@ -248,10 +296,13 @@ defmodule TypedStructTest do
   defp standardise(type_info, struct \\ @standard_struct_name)
 
   defp standardise({name, type, params}, struct) when is_tuple(type),
-    do: {name, standardise(type, struct), params}
+    do: {name, standardise(type, struct), standardise_params(params)}
 
   defp standardise({:type, _, type, params}, struct),
     do: {:type, :line, type, standardise(params, struct)}
+
+  defp standardise({:user_type, _, type, params}, struct),
+    do: {:user_type, :line, type, standardise(params, struct)}
 
   defp standardise({:remote_type, _, params}, struct),
     do: {:remote_type, :line, standardise(params, struct)}
@@ -259,9 +310,15 @@ defmodule TypedStructTest do
   defp standardise({:atom, _, struct}, struct),
     do: {:atom, :line, @standard_struct_name}
 
-  defp standardise({type, _, litteral}, _struct),
-    do: {type, :line, litteral}
+  defp standardise({type, _, literal}, _struct),
+    do: {type, :line, literal}
 
   defp standardise(list, struct) when is_list(list),
     do: Enum.map(list, &standardise(&1, struct))
+
+  defp standardise_params(params) when is_list(params),
+    do: Enum.map(params, &standardise_params/1)
+
+  defp standardise_params({:var, _, name}), do: {:var, :id, name}
+  defp standardise_params(params), do: params
 end
