@@ -74,7 +74,7 @@ defmodule Person do
     field :name, String.t(), enforce: true
     field :age, non_neg_integer()
     field :happy?, boolean(), default: true
-    field :phone, String.t()
+    field :phone, String.t(), doc: "strictly the home number"
   end
 end
 ```
@@ -126,6 +126,9 @@ defmodule MyStruct do
 
     # You can enforce a field.
     field :enforced_field, integer(), enforce: true
+
+    # Define each field with the field macro.
+    field :a_field_thats_purpose_is_not_obvious, String.t(), doc: "some explanation about this field"
   end
 end
 ```
@@ -194,6 +197,38 @@ typedstruct do
   field :a_string, String.t()
   field :an_int, integer()
 end
+```
+
+You can also add documentation to individual fields:
+
+```elixir
+typedstruct do
+  @typedoc "A typed struct"
+
+  field :a_string, String.t(), doc: "this is just a series of letters"
+  field :an_int, integer(), doc: "some explanation"
+end
+```
+
+As an added benefit, the above will generate a typedoc as below:
+
+```elixir
+@typedoc """
+A typed struct
+
+- `a_string`: this is just a series of letters
+- `an_int`: some explanation
+"""
+```
+
+This works without the `@typedoc ...` declaration,
+with the following result:
+
+```elixir
+@typedoc """
+- `a_string`: this is just a series of letters
+- `an_int`: some explanation
+"""
 ```
 
 You can also document submodules this way:
