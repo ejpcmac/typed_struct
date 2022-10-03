@@ -6,8 +6,8 @@ defmodule TypedStructTest do
   ############################################################################
 
   # Store the bytecode so we can get information from it.
-  {:module, _name, bytecodepublic1, _exports} =
-    defmodule TestStructPublic1 do
+  {:module, _name, bytecode, _exports} =
+    defmodule TestStruct do
       use TypedStruct
 
       typedstruct do
@@ -20,8 +20,8 @@ defmodule TypedStructTest do
       def enforce_keys, do: @enforce_keys
     end
 
-  {:module, _name, bytecodepublic2, _exports} =
-    defmodule TestStructPublic2 do
+  {:module, _name, bytecode_public, _exports} =
+    defmodule PublicTestStruct do
       use TypedStruct
 
       typedstruct visibility: :public do
@@ -34,8 +34,8 @@ defmodule TypedStructTest do
       def enforce_keys, do: @enforce_keys
     end
 
-  {:module, _name, bytecode_opaque1, _exports} =
-    defmodule OpaqueTestStruct1 do
+  {:module, _name, bytecode_opaque_legacy, _exports} =
+    defmodule LegacyOpaqueTestStruct do
       use TypedStruct
 
       typedstruct opaque: true do
@@ -43,8 +43,8 @@ defmodule TypedStructTest do
       end
     end
 
-  {:module, _name, bytecode_opaque2, _exports} =
-    defmodule OpaqueTestStruct2 do
+  {:module, _name, bytecode_opaque, _exports} =
+    defmodule OpaqueTestStruct do
       use TypedStruct
 
       typedstruct visibility: :opaque do
@@ -95,10 +95,10 @@ defmodule TypedStructTest do
       end
     end
 
-  @bytecode1 bytecodepublic1
-  @bytecode2 bytecodepublic2
-  @bytecode_opaque1 bytecode_opaque1
-  @bytecode_opaque2 bytecode_opaque2
+  @bytecode bytecode
+  @bytecode_public bytecode_public
+  @bytecode_opaque_legacy bytecode_opaque_legacy
+  @bytecode_opaque bytecode_opaque
   @bytecode_private bytecode_private
   @bytecode_noalias bytecode_noalias
 
@@ -110,7 +110,7 @@ defmodule TypedStructTest do
   ############################################################################
 
   test "generates the struct with its defaults" do
-    assert TestStructPublic1.__struct__() == %TestStructPublic1{
+    assert TestStruct.__struct__() == %TestStruct{
              int: nil,
              string: nil,
              string_with_default: "default",
@@ -119,7 +119,7 @@ defmodule TypedStructTest do
   end
 
   test "enforces keys for fields with `enforce: true`" do
-    assert TestStructPublic1.enforce_keys() == [:mandatory_int]
+    assert TestStruct.enforce_keys() == [:mandatory_int]
   end
 
   test "enforces keys by default if `enforce: true` is set at top-level" do
@@ -142,7 +142,7 @@ defmodule TypedStructTest do
     refute :with_nil_default in EnforcedTypedStruct.enforce_keys()
   end
 
-  test "generates a type for the struct in default case or if `visibility: :public` is set" do
+  test "generates a type for the struct in default case" do
     # Define a second struct with the type expected for TestStruct.
     {:module, _name, bytecode2, _exports} =
       defmodule TestStruct1 do
@@ -159,9 +159,9 @@ defmodule TypedStructTest do
     # Get both types and standardise them (remove line numbers and rename
     # the second struct with the name of the first one).
     type1 =
-      @bytecode1
+      @bytecode
       |> extract_first_type()
-      |> standardise(TypedStructTest.TestStructPublic1)
+      |> standardise(TypedStructTest.TestStruct)
 
     type2 =
       bytecode2
@@ -169,16 +169,36 @@ defmodule TypedStructTest do
       |> standardise(TypedStructTest.TestStruct1)
 
     assert type1 == type2
-
-    type3 =
-      @bytecode2
-      |> extract_first_type()
-      |> standardise(TypedStructTest.TestStructPublic2)
-
-    assert type3 == type2
   end
 
-  test "generates an opaque type if `opaque: true` or `visibility: :opaque` is set" do
+  test "generates a type for the struct if the `visibility: :public` is set" do
+    # Define a second struct with the type expected for TestStruct.
+    {:module, _name, bytecode2, _exports} =
+      defmodule TestStruct1 do
+        defstruct [:int, :string, :string_with_default, :mandatory_int]
+
+        @type t() :: %__MODULE__{
+                int: integer() | nil,
+                string: String.t() | nil,
+                string_with_default: String.t(),
+                mandatory_int: integer()
+              }
+      end
+
+    type1 =
+      @bytecode_public
+      |> extract_first_type()
+      |> standardise(TypedStructTest.PublicTestStruct)
+
+    type2 =
+      bytecode2
+      |> extract_first_type()
+      |> standardise(TypedStructTest.TestStruct1)
+
+    assert type1 == type2
+  end
+
+  test "generates an opaque type if `opaque: true` is set" do
     # Define a second struct with the type expected for TestStruct.
     {:module, _name, bytecode_expected, _exports} =
       defmodule TestStruct2 do
@@ -189,12 +209,10 @@ defmodule TypedStructTest do
                 }
       end
 
-    # Get both types and standardise them (remove line numbers and rename
-    # the second struct with the name of the first one).
     type1 =
-      @bytecode_opaque1
+      @bytecode_opaque
       |> extract_first_type(:opaque)
-      |> standardise(TypedStructTest.OpaqueTestStruct1)
+      |> standardise(TypedStructTest.OpaqueTestStruct)
 
     type2 =
       bytecode_expected
@@ -202,13 +220,30 @@ defmodule TypedStructTest do
       |> standardise(TypedStructTest.TestStruct2)
 
     assert type1 == type2
+  end
 
-    type3 =
-      @bytecode_opaque2
+  test "generates an opaque type if `visibility: :opaque` is set" do
+    # Define a second struct with the type expected for TestStruct.
+    {:module, _name, bytecode_expected, _exports} =
+      defmodule TestStruct2 do
+        defstruct [:int]
+
+        @opaque t() :: %__MODULE__{
+                  int: integer() | nil
+                }
+      end
+
+    type1 =
+      @bytecode_opaque
       |> extract_first_type(:opaque)
-      |> standardise(TypedStructTest.OpaqueTestStruct2)
+      |> standardise(TypedStructTest.OpaqueTestStruct)
 
-    assert type3 == type2
+    type2 =
+      bytecode_expected
+      |> extract_first_type(:opaque)
+      |> standardise(TypedStructTest.TestStruct2)
+
+    assert type1 == type2
   end
 
   test "generates a private type if `visibility: private` is set" do

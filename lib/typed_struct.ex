@@ -49,7 +49,6 @@ defmodule TypedStruct do
           field :field_two, integer(), enforce: true
           field :field_three, boolean(), enforce: true
           field :field_four, atom(), default: :hey
-          field :field_four, atom(), default: :hey
         end
       end
 
@@ -58,7 +57,7 @@ defmodule TypedStruct do
       defmodule MyStruct do
         use TypedStruct
 
-        typedstruct enforce: true, visibility: :private do
+        typedstruct enforce: true do
           field :field_one, String.t(), enforce: false
           field :field_two, integer()
           field :field_three, boolean()

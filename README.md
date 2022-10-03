@@ -100,6 +100,7 @@ The code above will be expanded to:
 
 ```elixir
 defmodule Person do
+  use Record
   Record.defrecord(:person, name: nil, age: 0)
   @type person :: {:person, String.t, non_neg_integer}
 end
@@ -178,7 +179,8 @@ defmodule MyStruct do
   end
 end
 ```
-You can also generate an opaque or private type for the struct:
+You can also generate an opaque or private type for the struct by using
+the `visibility: :opaque | :private | :public` option:
 
 ```elixir
 defmodule MyOpaqueStruct do
@@ -202,7 +204,8 @@ defmodule MyPrivateStruct do
 end
 ```
 
-The opaque and private types can also be defined using `opaque` or `private` property:
+The opaque and private types can also be defined using `opaque` or `private`
+boolean option:
 
 ```elixir
 defmodule MyOpaqueStruct do
