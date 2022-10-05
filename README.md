@@ -81,31 +81,6 @@ end
 
 Thanks to TypedStruct, this is now possible :)
 
-This library can also be used for defining typed records:
-
-```elixir
-defmodule Person do
-  use TypedStruct
-
-  typedrecord :person do
-    @typedoc "A person"
-
-    field :name, String.t(),
-    field :age,  non_neg_integer(), default: 0
-  end
-end
-```
-
-The code above will be expanded to:
-
-```elixir
-defmodule Person do
-  use Record
-  Record.defrecord(:person, name: nil, age: 0)
-  @type person :: {:person, String.t, non_neg_integer}
-end
-```
-
 ## Usage
 
 ### Setup
@@ -158,6 +133,21 @@ end
 Each field is defined through the
 [`field/2`](https://hexdocs.pm/typed_struct/TypedStruct.html#field/2) macro.
 
+To define a record use the `typedrecord` block:
+
+```elixir
+defmodule Person do
+  use TypedStruct
+
+  typedrecord :person do
+    @typedoc "A person"
+
+    field :name, String.t(),
+    field :age,  non_neg_integer(), default: 0
+  end
+end
+```
+
 ### Options
 
 If you want to enforce all the keys by default, you can do:
@@ -199,20 +189,6 @@ defmodule MyPrivateStruct do
 
   # Generate a private type for the struct.
   typedstruct visibility: :private do
-    field :name, String.t()
-  end
-end
-```
-
-The opaque and private types can also be defined using `opaque` or `private`
-boolean option:
-
-```elixir
-defmodule MyOpaqueStruct do
-  use TypedStruct
-
-  # Generate an opaque type for the struct.
-  typedstruct opaque: true do
     field :name, String.t()
   end
 end
@@ -286,6 +262,8 @@ defmodule MyStruct do
   end
 end
 ```
+
+Presently plugins are not supported by the `typedrecord` block.
 
 ### Some available plugins
 
@@ -423,6 +401,29 @@ defmodule MyModule do
             field: term() | nil
           }
   end
+end
+```
+
+To define a typed record, the following definition of the `typedrecord`:
+
+```elixir
+defmodule Person do
+  use TypedStruct
+  typedrecord :person do
+    @typedoc "A person"
+    field :name, String.t(),
+    field :age,  non_neg_integer(), default: 0
+  end
+end
+```
+
+becomes:
+
+```elixir
+defmodule Person do
+  use Record
+  Record.defrecord(:person, name: nil, age: 0)
+  @type person :: {:person, String.t()|nil, non_neg_integer()}
 end
 ```
 

@@ -97,7 +97,6 @@ defmodule TypedStructTest do
 
   @bytecode bytecode
   @bytecode_public bytecode_public
-  @bytecode_opaque_legacy bytecode_opaque_legacy
   @bytecode_opaque bytecode_opaque
   @bytecode_private bytecode_private
   @bytecode_noalias bytecode_noalias
@@ -145,7 +144,7 @@ defmodule TypedStructTest do
   test "generates a type for the struct in default case" do
     # Define a second struct with the type expected for TestStruct.
     {:module, _name, bytecode2, _exports} =
-      defmodule TestStruct1 do
+      defmodule TestStruct0 do
         defstruct [:int, :string, :string_with_default, :mandatory_int]
 
         @type t() :: %__MODULE__{
@@ -166,7 +165,7 @@ defmodule TypedStructTest do
     type2 =
       bytecode2
       |> extract_first_type()
-      |> standardise(TypedStructTest.TestStruct1)
+      |> standardise(TypedStructTest.TestStruct0)
 
     assert type1 == type2
   end
@@ -225,7 +224,7 @@ defmodule TypedStructTest do
   test "generates an opaque type if `visibility: :opaque` is set" do
     # Define a second struct with the type expected for TestStruct.
     {:module, _name, bytecode_expected, _exports} =
-      defmodule TestStruct2 do
+      defmodule TestStruct3 do
         defstruct [:int]
 
         @opaque t() :: %__MODULE__{
@@ -241,7 +240,7 @@ defmodule TypedStructTest do
     type2 =
       bytecode_expected
       |> extract_first_type(:opaque)
-      |> standardise(TypedStructTest.TestStruct2)
+      |> standardise(TypedStructTest.TestStruct3)
 
     assert type1 == type2
   end
@@ -249,7 +248,7 @@ defmodule TypedStructTest do
   test "generates a private type if `visibility: private` is set" do
     # Define a second struct with the type expected for TestStruct.
     {:module, _name, bytecode_private_expected, _exports} =
-      defmodule TestStruct3 do
+      defmodule TestStruct4 do
         defstruct [:int]
 
         @typep t :: %__MODULE__{int: integer() | nil}
@@ -266,7 +265,7 @@ defmodule TypedStructTest do
     type2 =
       bytecode_private_expected
       |> extract_first_type(:typep)
-      |> standardise(TypedStructTest.TestStruct3)
+      |> standardise(TypedStructTest.TestStruct4)
 
     assert type1 == type2
   end

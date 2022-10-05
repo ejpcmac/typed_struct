@@ -32,12 +32,11 @@ defmodule TypedStruct do
   ## Options
 
     * `enforce`    - if set to true, sets `enforce: true` to all fields by default.
-                     This can be overridden by setting `enforce: false` or a default value on
-                     individual fields.
+      This can be overridden by setting `enforce: false` or a default value on
+      individual fields.
     * `visibility` - one of the values: `:public` (default), `:private`, `:opaque`.
-    * `opaque`     - if set to true, creates an opaque  type for the struct.
-    * `private`    - if set to true, creates an private type for the struct.
     * `module`     - if set, creates the struct in a submodule named `module`.
+    * `opaque`     - (deprecated) if set to true, creates an opaque type for the struct.
 
   ## Examples
 
@@ -200,13 +199,9 @@ defmodule TypedStruct do
 
   @doc false
   def __visibility__(opts) do
+    # For backward compatibility support `opaque: true` or else default to public
     Keyword.get(opts, :visibility) ||
-      Enum.reduce_while([:opaque, :private, :public], :public, fn x, a ->
-        case Keyword.get(opts, x) do
-          true -> {:halt, x}
-          nil -> {:cont, a}
-        end
-      end)
+      ((Keyword.get(opts, :opaque) == true && :opaque) || :public)
   end
 
   @doc false

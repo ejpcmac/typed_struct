@@ -7,7 +7,7 @@ defmodule TypedRecordTest do
 
   # Store the bytecode so we can get information from it.
   {:module, _name, bytecode, _exports} =
-    defmodule TestStruct do
+    defmodule TestRecord do
       use TypedStruct
 
       typedrecord :user do
@@ -19,7 +19,7 @@ defmodule TypedRecordTest do
     end
 
   {:module, _name, bytecode_public, _exports} =
-    defmodule PublicTestStruct do
+    defmodule PublicTestRecord do
       use TypedStruct
 
       typedrecord :user, tag: User do
@@ -31,7 +31,7 @@ defmodule TypedRecordTest do
     end
 
   {:module, _name, bytecode_public2, _exports} =
-    defmodule TestStructPublic3 do
+    defmodule TestRecordPublic3 do
       use TypedStruct
 
       typedrecord :user, visibility: :public do
@@ -42,17 +42,8 @@ defmodule TypedRecordTest do
       end
     end
 
-  {:module, _name, bytecode_opaque_legacy, _exports} =
-    defmodule LegacyOpaqueTestStruct do
-      use TypedStruct
-
-      typedrecord :user, opaque: true do
-        field :int, integer()
-      end
-    end
-
   {:module, _name, bytecode_opaque, _exports} =
-    defmodule OpaqueTestStruct do
+    defmodule OpaqueTestRecord do
       use TypedStruct
 
       typedrecord :user, visibility: :opaque do
@@ -61,7 +52,7 @@ defmodule TypedRecordTest do
     end
 
   {:module, _name, bytecode_private, _exports} =
-    defmodule PrivateTestStruct do
+    defmodule PrivateTestRecord do
       use TypedStruct
 
       typedrecord :user, visibility: :private do
@@ -83,7 +74,6 @@ defmodule TypedRecordTest do
   @bytecode bytecode
   @bytecode_public bytecode_public
   @bytecode_public2 bytecode_public2
-  @bytecode_opaque_legacy bytecode_opaque_legacy
   @bytecode_opaque bytecode_opaque
   @bytecode_private bytecode_private
 
@@ -92,18 +82,18 @@ defmodule TypedRecordTest do
   ############################################################################
 
   test "generates the record with its defaults" do
-    require TypedRecordTest.TestStruct
-    assert TestStruct.user() == {:user, 1, nil, "def", :hi}
+    require TypedRecordTest.TestRecord
+    assert TestRecord.user() == {:user, 1, nil, "def", :hi}
   end
 
   test "generates a type for the record in default case" do
-    # Define a second struct with the type expected for TestStruct.
+    # Define a second struct with the type expected for TestRecord.
     {:module, _name, bytecode, _exports} =
-      defmodule TestRecord1 do
+      defmodule TestRecord0 do
         require Record
         Record.defrecord(:user, one: 1, two: nil, three: "def", four: :hi)
 
-        @type user() :: {:user, integer, String.t(), String.t(), atom}
+        @type user() :: {:user, integer(), String.t()|nil, String.t(), atom()}
       end
 
     type1 = extract_first_type(bytecode)
@@ -113,13 +103,13 @@ defmodule TypedRecordTest do
   end
 
   test "generates a type for the record in default case with a record tag" do
-    # Define a second struct with the type expected for TestStruct.
+    # Define a second struct with the type expected for TestRecord.
     {:module, _name, bytecode_public, _exports} =
       defmodule TestRecordTag do
         require Record
         Record.defrecord(:user, User, one: 1, two: nil, three: "def", four: :hi)
 
-        @type user() :: {User, integer, String.t(), String.t(), atom}
+        @type user() :: {User, integer(), String.t()|nil, String.t(), atom()}
       end
 
     type1 = extract_first_type(bytecode_public)
@@ -129,13 +119,13 @@ defmodule TypedRecordTest do
   end
 
   test "generates a type for the record with the `visibility: :public`" do
-    # Define a second struct with the type expected for TestStruct.
+    # Define a second struct with the type expected for TestRecord.
     {:module, _name, bytecode_public, _exports} =
       defmodule TestRecord1 do
         require Record
         Record.defrecord(:user, one: 1, two: nil, three: "def", four: :hi)
 
-        @type user() :: {:user, integer, String.t(), String.t(), atom}
+        @type user() :: {:user, integer(), String.t()|nil, String.t(), atom()}
       end
 
     type1 = extract_first_type(bytecode_public)
@@ -144,30 +134,14 @@ defmodule TypedRecordTest do
     assert type1 == type2
   end
 
-  test "generates an opaque type if `opaque: true` is set" do
-    # Define a second struct with the type expected for TestStruct.
-    {:module, _name, bytecode_expected, _exports} =
-      defmodule TestRecord2 do
-        require Record
-        Record.defrecord(:user, int: 1)
-
-        @opaque user() :: {:user, integer}
-      end
-
-    type1 = extract_first_type(bytecode_expected, :opaque)
-    type2 = extract_first_type(@bytecode_opaque_legacy, :opaque)
-
-    assert type1 == type2
-  end
-
   test "generates an opaque type if `visibility: :opaque` is set" do
-    # Define a second struct with the type expected for TestStruct.
+    # Define a second struct with the type expected for TestRecord.
     {:module, _name, bytecode_expected, _exports} =
       defmodule TestRecord2 do
         require Record
         Record.defrecord(:user, int: 1)
 
-        @opaque user() :: {:user, integer}
+        @opaque user() :: {:user, integer()}
       end
 
     type1 = extract_first_type(bytecode_expected, :opaque)
@@ -177,13 +151,13 @@ defmodule TypedRecordTest do
   end
 
   test "generates a private type if `visibility: private` is set" do
-    # Define a second struct with the type expected for TestStruct.
+    # Define a second struct with the type expected for TestRecord.
     {:module, _name, bytecode_private_expected, _exports} =
       defmodule TestRecord3 do
         require Record
         Record.defrecord(:user, int: 1)
 
-        @typep user() :: {:user, integer}
+        @typep user() :: {:user, integer()}
         @opaque t2() :: user()
       end
 
@@ -201,6 +175,24 @@ defmodule TypedRecordTest do
   ############################################################################
   ##                                Problems                                ##
   ############################################################################
+
+  test "Typedrecord field's name is not an atom" do
+    assert_raise(
+      ArgumentError,
+      "a field name must be an atom, got \"one\"",
+      fn ->
+        defmodule TestRecordBadKeyType do
+          use TypedStruct
+
+          typedrecord :user do
+            field "one", integer(), default: 1
+            field :two, String.t()
+            field :three, atom(), default: :hi
+          end
+        end
+      end
+    )
+  end
 
   test "Typedrecord missing record name" do
     assert_raise CompileError, ~r"undefined function typedrecord/1", fn ->
@@ -234,7 +226,7 @@ defmodule TypedRecordTest do
   # Extracts the first type from a module.
   defp extract_first_type(bytecode, type_keyword \\ :type) do
     case Code.Typespec.fetch_types(bytecode) do
-      {:ok, types} -> Keyword.get(types, type_keyword) |> standardise
+      {:ok, types} -> Keyword.get(types, type_keyword) |> standardise()
       _ -> nil
     end
   end
