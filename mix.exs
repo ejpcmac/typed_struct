@@ -11,6 +11,7 @@ defmodule TypedStruct.MixProject do
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      elixirc_paths: elixirc_paths(),
 
       # Tools
       dialyzer: dialyzer(),
@@ -55,6 +56,10 @@ defmodule TypedStruct.MixProject do
       # Documentation dependencies
       {:ex_doc, ">= 0.0.0", only: :docs, runtime: false}
     ]
+  end
+
+  defp elixirc_paths() do
+    if Mix.env() == :test, do: ["lib", "test"], else: ["lib"]
   end
 
   # Dialyzer configuration

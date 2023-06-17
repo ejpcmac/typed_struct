@@ -127,17 +127,17 @@ defmodule TypedStruct do
     case TypedStruct.__visibility__(opts) do
       :public ->
         quote bind_quoted: [types: types] do
-          @type t() :: %__MODULE__{unquote_splicing(types)}
+          @type(t() :: %__MODULE__{unquote_splicing(types)})
         end
 
       :opaque ->
         quote bind_quoted: [types: types] do
-          @opaque t() :: %__MODULE__{unquote_splicing(types)}
+          @opaque(t() :: %__MODULE__{unquote_splicing(types)})
         end
 
       :private ->
         quote bind_quoted: [types: types] do
-          @typep t() :: %__MODULE__{unquote_splicing(types)}
+          @typep(t() :: %__MODULE__{unquote_splicing(types)})
         end
     end
   end

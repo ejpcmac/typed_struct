@@ -151,19 +151,25 @@ defmodule TypedStruct.PluginTest do
 
   test "the code inserted by init/1 is scoped to the typedstruct block" do
     assert_raise CompileError,
-                 ~r"undefined function function_from_plugin/0",
+                 if(Version.compare(System.version(), "1.14.9") == :lt,
+                   do: ~r"undefined function function_from_plugin/0",
+                   else:
+                     ~r"cannot compile module TypedStruct.PluginTest.UseImportedFunctionOutsideOfBlock"
+                 ),
                  fn ->
-                   defmodule UseImportedFunctionOutsideOfBlock do
-                     use TypedStruct
+                   capture_io(:stderr, fn ->
+                     defmodule UseImportedFunctionOutsideOfBlock do
+                       use TypedStruct
 
-                     typedstruct do
-                       # TestPlugin.init/1 imports function_from_plugin/0.
-                       plugin TestPlugin
+                       typedstruct do
+                         # TestPlugin.init/1 imports function_from_plugin/0.
+                         plugin TestPlugin
+                       end
+
+                       # function_from_plugin/0 must not be available here.
+                       def call_function_from_plugin, do: function_from_plugin()
                      end
-
-                     # function_from_plugin/0 must not be available here.
-                     def call_function_from_plugin, do: function_from_plugin()
-                   end
+                   end)
                  end
   end
 
