@@ -195,15 +195,22 @@ defmodule TypedRecordTest do
   end
 
   test "Typedrecord missing record name" do
-    assert_raise CompileError, ~r"undefined function typedrecord/1", fn ->
-      defmodule ScopeTest do
-        use TypedStruct
+    assert_raise CompileError,
+                 if(Version.compare(System.version(), "1.14.9") == :lt,
+                   do: ~r"undefined function typedrecord/1",
+                   else: ~r"cannot compile module TypedRecordTest.ScopeTest"
+                 ),
+                 fn ->
+                   ExUnit.CaptureIO.capture_io(:stderr, fn ->
+                     defmodule ScopeTest do
+                       use TypedStruct
 
-        typedrecord do
-          field :in_scope, term()
-        end
-      end
-    end
+                       typedrecord do
+                         field :in_scope, term()
+                       end
+                     end
+                   end)
+                 end
   end
 
   test "it is not possible to add twice a field with the same name" do
