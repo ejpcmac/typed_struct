@@ -244,6 +244,11 @@ end
     Integration with the [Lens](https://github.com/obrok/lens) library.
 * [`typed_struct_legacy_reflection`](https://github.com/ejpcmac/typed_struct_legacy_reflection)
   – Re-enables the legacy reflection functions from TypedStruct 0.1.x.
+* [`typed_struct_ecto_changeset`](https://hexdocs.pm/typed_struct_ecto_changeset/readme.html)
+  – Adds field type casting and validation through integration with the
+  [Ecto.Changeset](https://hexdocs.pm/ecto/Ecto.Changeset.html) library.
+* [`typed_struct_ctor`](https://hexdocs.pm/typed_struct_ctor/TypedStructCtor.html)
+  – Adds validating (`new` and `from`) constructor functions.
 
 This list is not meant to be exhaustive, please [search for “typed_struct” on
 hex.pm](https://hex.pm/packages?search=typed_struct) for other results. If you
