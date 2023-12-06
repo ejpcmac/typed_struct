@@ -243,6 +243,15 @@ end
     Integration with the [Lens](https://github.com/obrok/lens) library.
 * [`typed_struct_legacy_reflection`](https://github.com/ejpcmac/typed_struct_legacy_reflection)
   – Re-enables the legacy reflection functions from TypedStruct 0.1.x.
+* [`typed_struct_ecto_changeset`](https://hexdocs.pm/typed_struct_ecto_changeset/readme.html)
+  – Adds field type casting and validation through integration with the [Ecto.Changeset](https://hexdocs.pm/ecto/Ecto.Changeset.html)
+  library.
+* [`typed_struct_ctor`](https://hexdocs.pm/typed_struct_ctor/TypedStructCtor.html)
+  – Adds validating (`new` and `from`) constructor functions.
+  > Try the macro out in real time without having to install or write any of your own code.  
+  > All you need is a running instance of [Livebook](https://livebook.dev/)
+  > 
+  > [![Run in Livebook](https://livebook.dev/badge/v1/blue.svg)](https://livebook.dev/run?url=https://github.com/withbelay/typed_struct_ctor/blob/main/try_it_out.livemd)
 
 This list is not meant to be exhaustive, please [search for “typed_struct” on
 hex.pm](https://hex.pm/packages?search=typed_struct) for other results. If you
