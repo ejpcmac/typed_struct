@@ -1,13 +1,10 @@
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
-  @repo_url "https://github.com/ejpcmac/typed_struct"
-
   def project do
     [
       app: :typed_struct,
-      version: @version,
+      version: version(),
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -27,8 +24,8 @@ defmodule TypedStruct.MixProject do
           "LICENSE.md": [title: "License"]
         ],
         main: "readme",
-        source_url: @repo_url,
-        source_ref: "v#{@version}",
+        source_url: repo_url(),
+        source_ref: "v#{version()}",
         formatters: ["html"]
       ],
 
@@ -73,6 +70,9 @@ defmodule TypedStruct.MixProject do
     ]
   end
 
+  defp version, do: "0.3.0"
+  defp repo_url, do: "https://github.com/ejpcmac/typed_struct"
+
   defp plt_file do
     case System.get_env("PLT_DIR") do
       nil -> nil
@@ -100,7 +100,7 @@ defmodule TypedStruct.MixProject do
       licenses: ["MIT"],
       links: %{
         "Changelog" => "https://hexdocs.pm/typed_struct/changelog.html",
-        "GitHub" => @repo_url
+        "GitHub" => repo_url()
       }
     ]
   end
