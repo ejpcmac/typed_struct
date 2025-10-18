@@ -1,0 +1,102 @@
+version = "0.2"
+
+# The available types of commits and their description.
+#
+# Types are shown in the dialog in the order they appear in this configuration.
+[types]
+feat = "add a new feature in the code (including tests for the feature)"
+sec = "patch a security issue (including updating a dependency for security)"
+fix = "patch a bug in the code"
+perf = "enhance the performance of the code"
+refactor = "restructure the code without changing its external behaviour"
+test = "add, update (including refactoring) or remove tests only"
+docs = "update the documentation only (including README and alike)"
+style = "update the style, like running a code formatter or changing headers"
+deps = "add, update or remove external dependencies used by the code"
+build = "update the toolchain, build scripts or package definitions"
+env = "update the development environment"
+ide = "update the IDE configuration"
+ci = "update the CI configuration (including local check scripts)"
+revert = "revert a previous commit"
+chore = "update or remove something that is not covered by any other type"
+wip = "work in progress / to be rebased and squashed later"
+debug = "commit used for debugging purposes, not to be integrated"
+
+# The accepted scopes.
+#
+# This table is optional: if omitted, no scope will be asked for.
+[scopes]
+# What kind of scope to accept.
+#
+# Can be one of: "any", "list". If it is "list", a `list` key containing a list
+# of valid scopes is required.
+accept = "list"
+list = [
+    # Lib
+    "lib",
+    "plugin",
+
+    # General scopes
+    "changelog",
+    "contributing",
+    "devshell",
+    "github",
+    "readme",
+    "toolchain",
+    "version",
+
+    # Tools
+    "commitlint",
+    "credo",
+    "dialyzer",
+    "direnv",
+    "editorconfig",
+    "ex_check",
+    "formatter",
+    "git",
+    "git-z",
+    "jujutsu",
+    "mix",
+    "prettier",
+    "taplo",
+    "vscode",
+]
+
+# The ticket / issue reference configuration.
+#
+# This table is optional: if omitted, no ticket will be asked for.
+[ticket]
+# Set to true to require a ticket number.
+# Set to false to ask for a ticket without requiring it.
+required = false
+# The list of valid ticket prefixes.
+#
+# Can be a `#` for GitHub / GitLab issues, or a Jira key for instance.
+prefixes = ["#"]
+
+# Templates written with the Tera [1] templating engine.
+#
+# Each template is documented below, with its list of available variables.
+# Variables marked as optional can be `None`, hence should be checked for
+# presence in the template.
+#
+# [1] https://tera.netlify.app/
+[templates]
+# The commit template.
+#
+# Available variables:
+#
+#   - type: the type of commit
+#   - scope (optional): the scope of the commit
+#   - description: the short description
+#   - breaking_change (optional): the description of the breaking change
+#   - ticket (optional): the ticket reference
+commit = """
+{{ type }}{% if scope %}({{ scope }}){% endif %}{% if breaking_change %}!{% endif %}: {{ description }}
+
+# Feel free to enter a longer description here.
+
+{% if ticket %}Refs: {{ ticket }}{% endif %}
+
+{% if breaking_change %}BREAKING CHANGE: {{ breaking_change }}{% endif %}
+"""
