@@ -3,7 +3,7 @@
 last_supported_version? =
   System.version()
   |> Version.parse!()
-  |> Version.match?("~> 1.13.0")
+  |> Version.match?("~> 1.18.0")
 
 [
   skipped: false,
