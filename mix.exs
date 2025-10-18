@@ -64,11 +64,7 @@ defmodule TypedStruct.MixProject do
       plt_core_path: System.get_env("PLT_DIR"),
       plt_file: plt_file(),
       plt_add_deps: :app_tree,
-      flags: [
-        :unmatched_returns,
-        :error_handling,
-        :race_conditions
-      ],
+      flags: dialyzer_flags(),
       ignore_warnings: ".dialyzer_ignore"
     ]
   end
@@ -78,6 +74,17 @@ defmodule TypedStruct.MixProject do
       nil -> nil
       plt_dir -> {:no_warn, Path.join(plt_dir, "typed_struct.plt")}
     end
+  end
+
+  def dialyzer_flags do
+    [
+      :error_handling,
+      :underspecs,
+      :unmatched_returns
+    ] ++
+      if System.otp_release() |> String.to_integer() >= 25,
+        do: [:missing_return, :extra_return],
+        else: [:race_conditions]
   end
 
   defp cli_env do
