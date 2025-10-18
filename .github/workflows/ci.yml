@@ -1,4 +1,4 @@
-name: "CI checks"
+name: CI
 
 on:
   push:
@@ -7,8 +7,12 @@ on:
       - develop
       - release/*
       - feature/*
+      - bugfix/*
+      - hotfix/*
+      - docs/*
   pull_request:
     branches:
+      - main
       - develop
     types:
       - opened
@@ -17,19 +21,56 @@ on:
       - synchronize
       - ready_for_review
 
+env:
+  CLICOLOR_FORCE: 1
+  IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  commitlint:
-    name: "Commit lint"
+  commits:
+    name: Conventional Commits
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Clone the repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v5
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Setup the Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Setup the environment
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci
+      - name: Run the commit linter
+        run: nix develop .#ci -c elixir scripts/check_commits.exs
 
-  check:
-    name: "Code checks for typed_struct [OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}]"
+  format:
+    name: Code formatting and typos
     runs-on: ubuntu-latest
+    env:
+      CI_JOB: format
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Setup the Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Setup the environment
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci
+      - name: Install Hex
+        run: nix develop .#ci -c mix local.hex --force
+      - name: Fetch the dependencies
+        run: nix develop .#ci -c mix deps.get
+      - name: Build the dependencies
+        run: nix develop .#ci -c mix deps.compile
+      - name: Check the code is formatted and free of typos
+        run: nix develop .#ci -c mix check
+
+  checks:
+    name: Code checks (Elixir ${{matrix.elixir}} on OTP ${{matrix.otp}})
+    runs-on: ubuntu-latest
+    env:
+      CI_JOB: checks
     strategy:
       fail-fast: false
       matrix:
@@ -38,28 +79,28 @@ jobs:
           #   - latest Elixir on all supported OTP versions,
           #   - previous Elixir on the last two supported OTP versions,
           #   - oldest Elixir on the first and last supported OTP versions,
-          #   - other Elixir version on the last supported OTP version.
-          - elixir: "1.10"
-            otp: "21.3"
-          - elixir: "1.10"
-            otp: "22.3"
-          - elixir: "1.11"
-            otp: "23.3"
-          - elixir: "1.12"
+          #   - other Elixir version on the first supported OTP version.
+          - elixir: "1.19"
+            otp: "28.1"
+          - elixir: "1.19"
+            otp: "27.3"
+          - elixir: "1.19"
+            otp: "26.2"
+          - elixir: "1.18"
+            otp: "27.3"
+          - elixir: "1.18"
+            otp: "26.2"
+          - elixir: "1.17"
+            otp: "25.3"
+          - elixir: "1.16"
             otp: "24.3"
-          - elixir: "1.13"
-            otp: "23.3"
-          - elixir: "1.13"
+          - elixir: "1.15"
+            otp: "26.2"
+          - elixir: "1.15"
             otp: "24.3"
-          # - elixir: "1.14"
-          #   otp: "23.3"
-          # - elixir: "1.14"
-          #   otp: "24.3"
-          # - elixir: "1.14"
-          #   otp: "25.0"
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
+      - name: Clone the repository
+        uses: actions/checkout@v4
       - name: Install Elixir/OTP
         uses: erlef/setup-beam@v1
         with:
@@ -67,5 +108,30 @@ jobs:
           elixir-version: ${{matrix.elixir}}
       - name: Fetch the dependencies
         run: mix deps.get
-      - name: Check (mix check)
+      - name: Build the dependencies
+        run: mix deps.compile
+      - name: Run the checks
         run: mix check
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: docs
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Setup the Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Setup the environment
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci
+      - name: Install Hex
+        run: nix develop .#ci -c mix local.hex --force
+      - name: Fetch the dependencies
+        run: nix develop .#ci -c mix deps.get
+      - name: Build the dependencies
+        run: nix develop .#ci -c mix deps.compile
+      - name: Check the documentation
+        run: nix develop .#ci -c mix docs
