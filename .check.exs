@@ -1,24 +1,42 @@
-# Check if the version used by the runner is currently the last supported
-# version, that is: the version used in the Nix shell on development machines.
-last_supported_version? =
-  System.version()
-  |> Version.parse!()
-  |> Version.match?("~> 1.18.0")
+eclint_excluded_files = [
+  "**.ex",
+  "**.exs",
+  "**.js",
+  "**.lock",
+  "**.toml",
+  "LICENSE"
+]
+
+enabled? = fn ci_job ->
+  System.get_env("CI_JOB", ci_job) == ci_job
+end
 
 [
   skipped: false,
   tools: [
-    {:compiler, "mix compile --force --verbose --warnings-as-errors"},
-    {:ex_unit, "mix test --trace"},
+    {:compiler, "mix compile --force --verbose --warnings-as-errors",
+     enabled: enabled?.("checks")},
 
-    # Run the formatter and ex_doc only for the last supported version. This
-    # avoids errors in CI when the formatting changes or ex_doc is not
-    # compatible with an old Elixir version.
-    {:formatter, last_supported_version?},
-    {:ex_doc, last_supported_version?},
+    # Commits
+    {:committed, "elixir scripts/check_commits.exs",
+     order: 1, enabled: enabled?.("commits")},
 
-    # Check for unused dependencies in the mix.lock.
+    # Formatters
+    {:typos, "typos", order: 2, enabled: enabled?.("format")},
+    {:eclint, "eclint -exclude {#{Enum.join(eclint_excluded_files, ",")}}",
+     order: 3, enabled: enabled?.("format")},
+    {:nixpkgs_fmt, "nixpkgs-fmt --check .",
+     order: 4, enabled: enabled?.("format")},
+    {:taplo, "taplo fmt --check", order: 5, enabled: enabled?.("format")},
+    {:prettier, "prettier --check .", order: 6, enabled: enabled?.("format")},
+    {:formatter, order: 7, enabled: enabled?.("format")},
+
+    # Checks
     {:unused_deps, "mix deps.unlock --check-unused",
-     enabled: last_supported_version?}
+     order: 8, enabled: enabled?.("checks")},
+    {:credo, order: 9, enabled: enabled?.("checks")},
+    {:ex_unit, "mix test --trace", order: 10, enabled: enabled?.("checks")},
+    {:ex_doc, order: 11, enabled: enabled?.("docs")},
+    {:dialyzer, order: 12, enabled: enabled?.("checks")}
   ]
 ]
