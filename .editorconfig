@@ -16,3 +16,16 @@ indent_size = 4
 
 [*.md]
 trim_trailing_whitespace = false
+
+[README.md]
+# NOTE: The README.md contains Elixir examples, which are indented by two
+# spaces. We need to reduce the indent size here to avoid any linting issue.
+indent_size = 2
+# NOTE: The README.md contains some URLs being too long to fit on 80-character
+# lines.
+max_line_length = 140
+
+[CHANGELOG.md]
+# NOTE: The README.md contains some URLs being too long to fit on 80-character
+# lines.
+max_line_length = 100
