@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "cab404.vscode-direnv",
+        "dnut.rewrap-revived",
+        "editorconfig.editorconfig",
+        "esbenp.prettier-vscode",
+        "jnoortheen.nix-ide",
+        "tamasfe.even-better-toml",
+        "tekumara.typos-vscode"
+    ]
+}
