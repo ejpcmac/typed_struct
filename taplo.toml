@@ -1,0 +1,5 @@
+include = ["*.toml"]
+
+[formatting]
+indent_string = "    "
+reorder_arrays = true
