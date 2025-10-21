@@ -46,7 +46,7 @@ list = [
     "version",
 
     # Tools
-    "commitlint",
+    "committed",
     "credo",
     "dialyzer",
     "direnv",

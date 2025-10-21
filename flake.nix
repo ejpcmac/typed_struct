@@ -49,7 +49,7 @@
               ];
 
               checkToolchain = with pkgs; [
-                commitlint
+                committed
                 eclint
                 nixpkgs-fmt
                 nodePackages.prettier

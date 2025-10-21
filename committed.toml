@@ -1,0 +1,21 @@
+line_length = 80
+style = "conventional"
+subject_capitalized = false
+subject_length = 75
+allowed_types = [
+    "build",
+    "chore",
+    "ci",
+    "deps",
+    "docs",
+    "env",
+    "feat",
+    "fix",
+    "ide",
+    "perf",
+    "refactor",
+    "revert",
+    "sec",
+    "style",
+    "test",
+]
