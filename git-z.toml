@@ -42,6 +42,7 @@ list = [
     "devshell",
     "github",
     "readme",
+    "scripts",
     "toolchain",
     "version",
 
