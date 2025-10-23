@@ -45,7 +45,7 @@ defmodule TypedStruct.Plugin do
         end
       end
 
-  Once compiled, we would optain:
+  Once compiled, we would obtain:
 
       iex> MyStruct.struct_description()
       "MY STRUCT"
@@ -204,7 +204,7 @@ defmodule TypedStruct.Plugin do
         end
 
       {false, true} ->
-        # If field/4 is present, allright.
+        # If field/4 is present, alright.
         nil
 
       {true, false} ->

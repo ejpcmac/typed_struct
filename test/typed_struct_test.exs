@@ -88,7 +88,7 @@ defmodule TypedStructTest do
     assert :enforced_by_default in EnforcedTypedStruct.enforce_keys()
   end
 
-  test "does not enforce keys for fields explicitely setting `enforce: false" do
+  test "does not enforce keys for fields explicitly setting `enforce: false" do
     refute :not_enforced in EnforcedTypedStruct.enforce_keys()
   end
 
@@ -259,8 +259,8 @@ defmodule TypedStructTest do
   defp standardise({:atom, _, struct}, struct),
     do: {:atom, :line, @standard_struct_name}
 
-  defp standardise({type, _, litteral}, _struct),
-    do: {type, :line, litteral}
+  defp standardise({type, _, literal}, _struct),
+    do: {type, :line, literal}
 
   defp standardise(list, struct) when is_list(list),
     do: Enum.map(list, &standardise(&1, struct))

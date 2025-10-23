@@ -1,10 +1,11 @@
 # TypedStruct
 
-[![Build Status](https://travis-ci.com/ejpcmac/typed_struct.svg?branch=develop)](https://travis-ci.com/ejpcmac/typed_struct)
-[![hex.pm version](https://img.shields.io/hexpm/v/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg?style=flat)](https://hexdocs.pm/typed_struct/)
-[![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg?style=flat)](https://hex.pm/packages/typed_struct)
-[![License](https://img.shields.io/hexpm/l/typed_struct.svg?style=flat)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)
+[![hex.pm version](https://img.shields.io/hexpm/v/typed_struct.svg)](https://hex.pm/packages/typed_struct)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/typed_struct/)
+[![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg)](https://hex.pm/packages/typed_struct)
+[![License](https://img.shields.io/hexpm/l/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)<br>
+[![Test Status](https://github.com/ejpcmac/git-z/actions/workflows/ci.yml/badge.svg)
+](https://github.com/ejpcmac/git-z/actions/workflows/ci.yml)
 
 <!-- @moduledoc -->
 
