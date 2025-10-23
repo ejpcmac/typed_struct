@@ -4,8 +4,8 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/typed_struct/)
 [![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg)](https://hex.pm/packages/typed_struct)
 [![License](https://img.shields.io/hexpm/l/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)<br>
-[![Test Status](https://github.com/ejpcmac/git-z/actions/workflows/ci.yml/badge.svg)
-](https://github.com/ejpcmac/git-z/actions/workflows/ci.yml)
+[![Test Status](https://github.com/ejpcmac/typed_struct/actions/workflows/ci.yml/badge.svg)
+](https://github.com/ejpcmac/typed_struct/actions/workflows/ci.yml)
 
 <!-- @moduledoc -->
 

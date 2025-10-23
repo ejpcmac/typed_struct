@@ -1,78 +1,16 @@
 defmodule TypedStructTest do
   use ExUnit.Case
 
-  ############################################################################
-  ##                               Test data                                ##
-  ############################################################################
+  alias TypedStruct.TestStruct
 
-  # Store the bytecode so we can get information from it.
-  {:module, _name, bytecode, _exports} =
-    defmodule TestStruct do
-      use TypedStruct
-
-      typedstruct do
-        field :int, integer()
-        field :string, String.t()
-        field :string_with_default, String.t(), default: "default"
-        field :mandatory_int, integer(), enforce: true
-      end
-
-      def enforce_keys, do: @enforce_keys
-    end
-
-  {:module, _name, bytecode_opaque, _exports} =
-    defmodule OpaqueTestStruct do
-      use TypedStruct
-
-      typedstruct opaque: true do
-        field :int, integer()
-      end
-    end
-
-  defmodule EnforcedTypedStruct do
-    use TypedStruct
-
-    typedstruct enforce: true do
-      field :enforced_by_default, term()
-      field :not_enforced, term(), enforce: false
-      field :with_default, integer(), default: 1
-      field :with_false_default, boolean(), default: false
-      field :with_nil_default, term(), default: nil
-    end
-
-    def enforce_keys, do: @enforce_keys
-  end
-
-  defmodule TestModule do
-    use TypedStruct
-
-    typedstruct module: Struct do
-      field :field, term()
-    end
-  end
-
-  {:module, _name, bytecode_noalias, _exports} =
-    defmodule TestStructNoAlias do
-      use TypedStruct
-
-      typedstruct do
-        field :test, TestModule.TestSubModule.t()
-      end
-    end
-
-  @bytecode bytecode
-  @bytecode_opaque bytecode_opaque
-  @bytecode_noalias bytecode_noalias
-
-  # Standard struct name used when comparing generated types.
-  @standard_struct_name TypedStructTest.TestStruct
+  import ExUnit.CaptureIO
 
   ############################################################################
   ##                             Standard cases                             ##
   ############################################################################
 
   test "generates the struct with its defaults" do
-    assert TestStruct.__struct__() == %TestStruct{
+    assert TestStruct.BaseFeatures.__struct__() == %TestStruct.BaseFeatures{
              int: nil,
              string: nil,
              string_with_default: "default",
@@ -81,83 +19,67 @@ defmodule TypedStructTest do
   end
 
   test "enforces keys for fields with `enforce: true`" do
-    assert TestStruct.enforce_keys() == [:mandatory_int]
+    assert TestStruct.BaseFeatures.enforce_keys() == [:mandatory_int]
   end
 
   test "enforces keys by default if `enforce: true` is set at top-level" do
-    assert :enforced_by_default in EnforcedTypedStruct.enforce_keys()
+    assert :enforced_by_default in TestStruct.Enforced.enforce_keys()
   end
 
   test "does not enforce keys for fields explicitly setting `enforce: false" do
-    refute :not_enforced in EnforcedTypedStruct.enforce_keys()
+    refute :not_enforced in TestStruct.Enforced.enforce_keys()
   end
 
   test "does not enforce keys for fields with a default value" do
-    refute :with_default in EnforcedTypedStruct.enforce_keys()
+    refute :with_default in TestStruct.Enforced.enforce_keys()
   end
 
   test "does not enforce keys for fields with a default value set to `false`" do
-    refute :with_false_default in EnforcedTypedStruct.enforce_keys()
+    refute :with_false_default in TestStruct.Enforced.enforce_keys()
   end
 
   test "does not enforce keys for fields with a default value set to `nil`" do
-    refute :with_nil_default in EnforcedTypedStruct.enforce_keys()
+    refute :with_nil_default in TestStruct.Enforced.enforce_keys()
   end
 
   test "generates a type for the struct" do
-    # Define a second struct with the type expected for TestStruct.
-    {:module, _name, bytecode2, _exports} =
-      defmodule TestStruct2 do
-        defstruct [:int, :string, :string_with_default, :mandatory_int]
-
-        @type t() :: %__MODULE__{
-                int: integer() | nil,
-                string: String.t() | nil,
-                string_with_default: String.t(),
-                mandatory_int: integer()
-              }
-      end
-
     # Get both types and standardise them (remove line numbers and rename
     # the second struct with the name of the first one).
-    type1 = @bytecode |> extract_first_type() |> standardise()
+    type1 =
+      TestStruct.BaseFeatures
+      |> extract_first_type()
+      |> standardise(TestStruct.BaseFeatures)
 
     type2 =
-      bytecode2
+      TestStruct.BaseFeatures.Expected
       |> extract_first_type()
-      |> standardise(TypedStructTest.TestStruct2)
+      |> standardise(TestStruct.BaseFeatures.Expected)
 
     assert type1 == type2
   end
 
   test "generates an opaque type if `opaque: true` is set" do
-    # Define a second struct with the type expected for TestStruct.
-    {:module, _name, bytecode_expected, _exports} =
-      defmodule TestStruct3 do
-        defstruct [:int]
-
-        @opaque t() :: %__MODULE__{
-                  int: integer() | nil
-                }
-      end
-
     # Get both types and standardise them (remove line numbers and rename
     # the second struct with the name of the first one).
     type1 =
-      @bytecode_opaque
+      TestStruct.Opaque
       |> extract_first_type(:opaque)
-      |> standardise(TypedStructTest.OpaqueTestStruct)
+      |> standardise(TestStruct.Opaque)
 
     type2 =
-      bytecode_expected
+      TestStruct.Opaque.Expected
       |> extract_first_type(:opaque)
-      |> standardise(TypedStructTest.TestStruct3)
+      |> standardise(TestStruct.Opaque.Expected)
 
     assert type1 == type2
   end
 
   test "generates the struct in a submodule if `module: ModuleName` is set" do
-    assert TestModule.Struct.__struct__() == %TestModule.Struct{field: nil}
+    # credo:disable-for-next-line Credo.Check.Design.AliasUsage
+    assert TestStruct.AsSubmodule.Struct.__struct__() ==
+             %TestStruct.AsSubmodule.Struct{
+               field: nil
+             }
   end
 
   ############################################################################
@@ -165,18 +87,20 @@ defmodule TypedStructTest do
   ############################################################################
 
   test "TypedStruct macros are available only in the typedstruct block" do
-    assert_raise CompileError, ~r"undefined function field/2", fn ->
-      defmodule ScopeTest do
-        use TypedStruct
+    assert capture_io(:stderr, fn ->
+             assert_raise CompileError, fn ->
+               defmodule ScopeTest do
+                 use TypedStruct
 
-        typedstruct do
-          field :in_scope, term()
-        end
+                 typedstruct do
+                   field :in_scope, term()
+                 end
 
-        # Let’s try to use field/2 outside the block.
-        field :out_of_scope, term()
-      end
-    end
+                 # Let’s try to use field/2 outside the block.
+                 field :out_of_scope, term()
+               end
+             end
+           end) =~ "undefined function field/2"
   end
 
   test "the name of a field must be an atom" do
@@ -205,28 +129,17 @@ defmodule TypedStructTest do
   end
 
   test "aliases are properly resolved in types" do
-    {:module, _name, bytecode_actual, _exports} =
-      defmodule TestStructWithAlias do
-        use TypedStruct
-
-        typedstruct do
-          alias TestModule.TestSubModule
-
-          field :test, TestSubModule.t()
-        end
-      end
-
     # Get both types and standardise them (remove line numbers and rename
     # the second struct with the name of the first one).
     type1 =
-      @bytecode_noalias
+      TestStruct.Alias.With
       |> extract_first_type()
-      |> standardise(TypedStructTest.TestStructNoAlias)
+      |> standardise(TestStruct.Alias.With)
 
     type2 =
-      bytecode_actual
+      TestStruct.Alias.Without
       |> extract_first_type()
-      |> standardise(TypedStructTest.TestStructWithAlias)
+      |> standardise(TestStruct.Alias.Without)
 
     assert type1 == type2
   end
@@ -245,10 +158,7 @@ defmodule TypedStructTest do
 
   # Standardises a type (removes line numbers and renames the struct to the
   # standard struct name).
-  defp standardise(type_info, struct \\ @standard_struct_name)
-
-  defp standardise({name, type, params}, struct) when is_tuple(type),
-    do: {name, standardise(type, struct), params}
+  defp standardise(type_info, struct)
 
   defp standardise({:type, _, type, params}, struct),
     do: {:type, :line, type, standardise(params, struct)}
@@ -257,7 +167,10 @@ defmodule TypedStructTest do
     do: {:remote_type, :line, standardise(params, struct)}
 
   defp standardise({:atom, _, struct}, struct),
-    do: {:atom, :line, @standard_struct_name}
+    do: {:atom, :line, TestStruct}
+
+  defp standardise({name, type, params}, struct) when is_tuple(type),
+    do: {name, standardise(type, struct), params}
 
   defp standardise({type, _, literal}, _struct),
     do: {type, :line, literal}

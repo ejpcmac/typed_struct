@@ -150,21 +150,21 @@ defmodule TypedStruct.PluginTest do
   ############################################################################
 
   test "the code inserted by init/1 is scoped to the typedstruct block" do
-    assert_raise CompileError,
-                 ~r"undefined function function_from_plugin/0",
-                 fn ->
-                   defmodule UseImportedFunctionOutsideOfBlock do
-                     use TypedStruct
+    assert capture_io(:stderr, fn ->
+             assert_raise CompileError, fn ->
+               defmodule UseImportedFunctionOutsideOfBlock do
+                 use TypedStruct
 
-                     typedstruct do
-                       # TestPlugin.init/1 imports function_from_plugin/0.
-                       plugin TestPlugin
-                     end
-
-                     # function_from_plugin/0 must not be available here.
-                     def call_function_from_plugin, do: function_from_plugin()
-                   end
+                 typedstruct do
+                   # TestPlugin.init/1 imports function_from_plugin/0.
+                   plugin TestPlugin
                  end
+
+                 # function_from_plugin/0 must not be available here.
+                 def call_function_from_plugin, do: function_from_plugin()
+               end
+             end
+           end) =~ "undefined function function_from_plugin/0"
   end
 
   test "defining field/3 emits a deprecation warning" do
