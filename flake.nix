@@ -45,11 +45,14 @@
               git-z = inputs'.git-z.packages.git-z;
 
               buildToolchain = with pkgs; [
-                beam27Packages.elixir_1_18
+                beamMinimal27Packages.elixir_1_18
+              ];
+
+              commitCheckToolchain = with pkgs; [
+                committed
               ];
 
               checkToolchain = with pkgs; [
-                committed
                 eclint
                 nixpkgs-fmt
                 nodePackages.prettier
@@ -94,6 +97,7 @@
 
                 packages =
                   buildToolchain
+                  ++ commitCheckToolchain
                   ++ checkToolchain
                   ++ ideToolchain
                   ++ developmentTools;
@@ -102,12 +106,27 @@
                   ideEnv;
               };
 
-              ci = {
-                name = "typed_struct CI";
+              ci-committed = {
+                name = "typed_struct CI with committed";
+
+                packages =
+                  buildToolchain
+                  ++ commitCheckToolchain;
+              };
+
+              ci-formatters = {
+                name = "typed_struct CI with formatters";
 
                 packages =
                   buildToolchain
                   ++ checkToolchain;
+              };
+
+              ci-minimal = {
+                name = "typed_struct CI minimal";
+
+                packages =
+                  buildToolchain;
               };
             };
         };
