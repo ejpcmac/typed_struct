@@ -39,9 +39,9 @@ jobs:
       - name: Setup the Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Setup the environment
-        run: nix build -L --no-link .#devShells.x86_64-linux.ci
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci-committed
       - name: Run the commit linter
-        run: nix develop .#ci -c elixir scripts/check_commits.exs
+        run: nix develop .#ci-committed -c elixir scripts/check_commits.exs
 
   format:
     name: Code formatting and typos
@@ -56,15 +56,15 @@ jobs:
       - name: Setup the Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Setup the environment
-        run: nix build -L --no-link .#devShells.x86_64-linux.ci
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci-formatters
       - name: Install Hex
-        run: nix develop .#ci -c mix local.hex --force
+        run: nix develop .#ci-formatters -c mix local.hex --force
       - name: Fetch the dependencies
-        run: nix develop .#ci -c mix deps.get
+        run: nix develop .#ci-formatters -c mix deps.get
       - name: Build the dependencies
-        run: nix develop .#ci -c mix deps.compile
+        run: nix develop .#ci-formatters -c mix deps.compile
       - name: Check the code is formatted and free of typos
-        run: nix develop .#ci -c mix check
+        run: nix develop .#ci-formatters -c mix check
 
   checks:
     name: Code checks (Elixir ${{matrix.elixir}} on OTP ${{matrix.otp}})
@@ -126,12 +126,12 @@ jobs:
       - name: Setup the Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Setup the environment
-        run: nix build -L --no-link .#devShells.x86_64-linux.ci
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci-minimal
       - name: Install Hex
-        run: nix develop .#ci -c mix local.hex --force
+        run: nix develop .#ci-minimal -c mix local.hex --force
       - name: Fetch the dependencies
-        run: nix develop .#ci -c mix deps.get
+        run: nix develop .#ci-minimal -c mix deps.get
       - name: Build the dependencies
-        run: nix develop .#ci -c mix deps.compile
+        run: nix develop .#ci-minimal -c mix deps.compile
       - name: Check the documentation
-        run: nix develop .#ci -c mix docs
+        run: nix develop .#ci-minimal -c mix docs
