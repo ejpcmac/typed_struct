@@ -45,7 +45,7 @@
               git-z = inputs'.git-z.packages.git-z;
 
               buildToolchain = with pkgs; [
-                beam27Packages.elixir_1_18
+                beamMinimal27Packages.elixir_1_18
               ];
 
               checkToolchain = with pkgs; [
