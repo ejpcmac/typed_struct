@@ -115,6 +115,20 @@ defmodule TypedStructTest do
     end
   end
 
+  test "the type of a field must be a type" do
+    assert_raise ArgumentError,
+                 "a field must have a type, got [default: 1]",
+                 fn ->
+                   defmodule InvalidStruct do
+                     use TypedStruct
+
+                     typedstruct do
+                       field :name, default: 1
+                     end
+                   end
+                 end
+  end
+
   test "it is not possible to add twice a field with the same name" do
     assert_raise ArgumentError, "the field :name is already set", fn ->
       defmodule InvalidStruct do

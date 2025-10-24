@@ -176,8 +176,15 @@ defmodule TypedStruct do
   end
 
   @doc false
-  def __field__(name, type, opts, %Macro.Env{module: mod} = env)
-      when is_atom(name) do
+  def __field__(name, type, opts, %Macro.Env{module: mod} = env) do
+    if not is_atom(name) do
+      raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
+    end
+
+    if not ast?(type) do
+      raise ArgumentError, "a field must have a type, got #{inspect(type)}"
+    end
+
     if mod |> Module.get_attribute(:ts_fields) |> Keyword.has_key?(name) do
       raise ArgumentError, "the field #{inspect(name)} is already set"
     end
@@ -198,9 +205,13 @@ defmodule TypedStruct do
     if enforce?, do: Module.put_attribute(mod, :ts_enforce_keys, name)
   end
 
-  def __field__(name, _type, _opts, _env) do
-    raise ArgumentError, "a field name must be an atom, got #{inspect(name)}"
-  end
+  # Checks whether some value looks like Elixir AST.
+  defp ast?({name, meta, params})
+       when (is_atom(name) or is_tuple(name)) and is_list(meta) and
+              is_list(params),
+       do: true
+
+  defp ast?(_), do: false
 
   # Makes the type nullable if the key is not enforced.
   defp type_for(type, false), do: type
