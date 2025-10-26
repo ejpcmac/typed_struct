@@ -101,6 +101,7 @@ defmodule TypedStruct.MixProject do
       coveralls: :test,
       "coveralls.detail": :test,
       "coveralls.html": :test,
+      "coveralls.lcov": :test,
 
       # Use a custom env for docs.
       docs: :docs
