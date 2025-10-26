@@ -120,6 +120,10 @@
                       MixTestInteractive.run(System.argv())
                     '';
                   }
+                  {
+                    name = "live-coverage";
+                    command = "mti_exec --clear --task coveralls.lcov";
+                  }
                 ];
               };
 
