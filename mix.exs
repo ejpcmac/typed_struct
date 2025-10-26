@@ -52,7 +52,6 @@ defmodule TypedStruct.MixProject do
       {:credo, "~> 1.0", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test, runtime: false},
-      {:mix_test_watch, ">= 0.0.0", only: :test, runtime: false},
       {:ex_unit_notifier, ">= 0.0.0", only: :test, runtime: false},
 
       # Project dependencies
@@ -94,9 +93,6 @@ defmodule TypedStruct.MixProject do
 
   defp cli_env do
     [
-      # Run mix test.watch in `:test` env.
-      "test.watch": :test,
-
       # Always run Coveralls Mix tasks in `:test` env.
       coveralls: :test,
       "coveralls.detail": :test,

@@ -104,6 +104,23 @@
 
                 env =
                   ideEnv;
+
+                commands = [
+                  # NOTE: Install `mix_test_interactive` via Nix since we cannot
+                  # depend on in via Mix beauce it depends on `typed_struct`.
+                  {
+                    name = "mti_exec";
+                    command = ''
+                      #!/usr/bin/env elixir
+
+                      Mix.install([
+                        {:mix_test_interactive, "~> 4.1"}
+                      ])
+
+                      MixTestInteractive.run(System.argv())
+                    '';
+                  }
+                ];
               };
 
               ci-committed = {
