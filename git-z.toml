@@ -47,6 +47,7 @@ list = [
     "version",
 
     # Tools
+    "codecov",
     "committed",
     "credo",
     "dialyzer",
