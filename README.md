@@ -3,7 +3,7 @@
 [![hex.pm version](https://img.shields.io/hexpm/v/typed_struct.svg)](https://hex.pm/packages/typed_struct)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/typed_struct/)
 [![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg)](https://hex.pm/packages/typed_struct)
-[![License](https://img.shields.io/hexpm/l/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)<br>
+[![License](https://img.shields.io/hexpm/l/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)  
 [![codecov](https://codecov.io/gh/ejpcmac/typed_struct/graph/badge.svg?token=riJ8O4G501)](https://codecov.io/gh/ejpcmac/typed_struct)
 [![Test Status](https://github.com/ejpcmac/typed_struct/actions/workflows/ci.yml/badge.svg)
 ](https://github.com/ejpcmac/typed_struct/actions/workflows/ci.yml)
