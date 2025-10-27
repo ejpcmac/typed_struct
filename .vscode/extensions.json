@@ -5,6 +5,7 @@
         "editorconfig.editorconfig",
         "esbenp.prettier-vscode",
         "jnoortheen.nix-ide",
+        "ryanluker.vscode-coverage-gutters",
         "tamasfe.even-better-toml",
         "tekumara.typos-vscode"
     ]

@@ -114,6 +114,36 @@ jobs:
       - name: Run the checks
         run: mix check
 
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    env:
+      MIX_ENV: test
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Setup the Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Setup the environment
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci-minimal
+      - name: Fetch the dependencies
+        run: nix develop .#ci-minimal -c mix deps.get
+      - name: Build the dependencies
+        run: nix develop .#ci-minimal -c mix deps.compile
+      - name: Generate the test coverage report
+        run: nix develop .#ci-minimal -c mix coveralls.lcov
+      - name: Upload the test coverage report
+        uses: codecov/codecov-action@v5
+        with:
+          disable_search: true
+          files: ./cover/lcov.info
+          fail_ci_if_error: true
+          use_oidc: true
+
   docs:
     name: Documentation
     runs-on: ubuntu-latest

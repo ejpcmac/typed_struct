@@ -1,4 +1,7 @@
 {
+    "coverage-gutters.coverageBaseDir": "cover",
+    "coverage-gutters.coverageReportFileName": "cover/excoveralls.html",
+    "coverage-gutters.watchOnActivate": true,
     "editor.formatOnSave": true,
     "editor.rulers": [80],
     "evenBetterToml.taplo.bundled": false,
