@@ -52,6 +52,10 @@
                 committed
               ];
 
+              reuseToolchain = with pkgs; [
+                reuse
+              ];
+
               checkToolchain = with pkgs; [
                 eclint
                 nixpkgs-fmt
@@ -98,6 +102,7 @@
                 packages =
                   buildToolchain
                   ++ commitCheckToolchain
+                  ++ reuseToolchain
                   ++ checkToolchain
                   ++ ideToolchain
                   ++ developmentTools;
