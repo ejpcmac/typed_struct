@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023-2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-License-Identifier: MIT
+
 {
   description = "Typed Elixir structs without boilerplate code.";
 

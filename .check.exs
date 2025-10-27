@@ -1,10 +1,13 @@
+# SPDX-FileCopyrightText: 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-License-Identifier: MIT
+
 eclint_excluded_files = [
   "**.ex",
   "**.exs",
   "**.js",
   "**.lock",
   "**.toml",
-  "LICENSE"
+  "LICENSES/*"
 ]
 
 enabled? = fn ci_job ->

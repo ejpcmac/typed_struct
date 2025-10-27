@@ -1,9 +1,14 @@
+<!--
+SPDX-FileCopyrightText: 2018-2022, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 # TypedStruct
 
 [![hex.pm version](https://img.shields.io/hexpm/v/typed_struct.svg)](https://hex.pm/packages/typed_struct)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/typed_struct/)
 [![Total Download](https://img.shields.io/hexpm/dt/typed_struct.svg)](https://hex.pm/packages/typed_struct)
-[![License](https://img.shields.io/hexpm/l/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/blob/master/LICENSE.md)  
+[![License](https://img.shields.io/hexpm/l/typed_struct.svg)](https://github.com/ejpcmac/typed_struct/blob/main/LICENSES/MIT.txt)  
 [![codecov](https://codecov.io/gh/ejpcmac/typed_struct/graph/badge.svg?token=riJ8O4G501)](https://codecov.io/gh/ejpcmac/typed_struct)
 [![Test Status](https://github.com/ejpcmac/typed_struct/actions/workflows/ci.yml/badge.svg)
 ](https://github.com/ejpcmac/typed_struct/actions/workflows/ci.yml)
@@ -415,6 +420,11 @@ Before contributing to this project, please read the
 
 ## License
 
-Copyright © 2018-2022 Jean-Philippe Cugnet and Contributors
+Copyright © 2018-2022, 2025 Jean-Philippe Cugnet and Contributors
 
-This project is licensed under the [MIT license](./LICENSE.md).
+This project is licensed under the [MIT license](./LICENSES/MIT.txt). Its
+documentation is licensed under the [Creative Commons Attribution Share Alike
+4.0 International](./LICENSES/CC-BY-SA-4.0.txt) license.
+
+The copyright and license information is embedded in each file, following the
+[REUSE](https://reuse.software/) specification.

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
 # EditorConfig is awesome: http://EditorConfig.org
 
 root = true
@@ -29,3 +32,11 @@ max_line_length = 140
 # NOTE: The README.md contains some URLs being too long to fit on 80-character
 # lines.
 max_line_length = 100
+
+[flake.nix]
+# NOTE: The copyright line is 82-character-long and cannot be split.
+max_line_length = 82
+
+[ci.yml]
+# NOTE: The copyright line is 88-character-long and cannot be split.
+max_line_length = 88

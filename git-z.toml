@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023-2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-License-Identifier: CC0-1.0
+
 version = "0.2"
 
 # The available types of commits and their description.
