@@ -13,6 +13,12 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+* Ensure the second argument to `field/2` is a type ([#45]).
+
+[#45]: https://github.com/ejpcmac/typed_struct/issues/45
+
 ## [0.3.0] - 2022-02-15
 
 ### Added
