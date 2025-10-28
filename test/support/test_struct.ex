@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2018, 2020, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
+# SPDX-FileCopyrightText: 2023 Serge Aleynikov <saleyn@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule TypedStruct.TestStruct do
   @moduledoc """
   A collection of test structs.

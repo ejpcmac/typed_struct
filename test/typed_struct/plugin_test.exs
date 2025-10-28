@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2019-2020, 2022 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-FileCopyrightText: 2022 Jonathan Chukinas <chukinas@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule TypedStruct.PluginTest do
   use ExUnit.Case
 

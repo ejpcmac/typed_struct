@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023-2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-License-Identifier: MIT
+
 {
   description = "Typed Elixir structs without boilerplate code.";
 
@@ -52,6 +55,10 @@
                 committed
               ];
 
+              reuseToolchain = with pkgs; [
+                reuse
+              ];
+
               checkToolchain = with pkgs; [
                 eclint
                 nixpkgs-fmt
@@ -98,6 +105,7 @@
                 packages =
                   buildToolchain
                   ++ commitCheckToolchain
+                  ++ reuseToolchain
                   ++ checkToolchain
                   ++ ideToolchain
                   ++ developmentTools;
@@ -133,6 +141,13 @@
                 packages =
                   buildToolchain
                   ++ commitCheckToolchain;
+              };
+
+              ci-reuse = {
+                name = "typed_struct CI with reuse";
+
+                packages =
+                  reuseToolchain;
               };
 
               ci-formatters = {

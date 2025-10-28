@@ -1,5 +1,8 @@
 #!/usr/bin/env elixir
 
+# SPDX-FileCopyrightText: 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-License-Identifier: MIT
+
 defmodule CheckCommits do
   def run do
     commits = commits_to_check()

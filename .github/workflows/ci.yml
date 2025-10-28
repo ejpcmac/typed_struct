@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022, 2024-2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-License-Identifier: CC0-1.0
+
 name: CI
 
 on:
@@ -42,6 +45,23 @@ jobs:
         run: nix build -L --no-link .#devShells.x86_64-linux.ci-committed
       - name: Run the commit linter
         run: nix develop .#ci-committed -c elixir scripts/check_commits.exs
+
+  reuse:
+    name: REUSE Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Setup the Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Setup the environment
+        run: nix build -L --no-link .#devShells.x86_64-linux.ci-reuse
+      - name: Run the REUSE compliance linter
+        run: nix develop .#ci-reuse -c reuse lint
 
   format:
     name: Code formatting and typos

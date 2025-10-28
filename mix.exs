@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2018-2022, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-License-Identifier: MIT
+
 defmodule TypedStruct.MixProject do
   use Mix.Project
 
@@ -25,7 +28,8 @@ defmodule TypedStruct.MixProject do
           "README.md": [title: "Overview"],
           "CHANGELOG.md": [title: "Changelog"],
           "CONTRIBUTING.md": [title: "Contributing"],
-          "LICENSE.md": [title: "License"]
+          "LICENSES/MIT.txt": [title: "MIT License"],
+          "LICENSES/CC-BY-SA-4.0.txt": [title: "CC-BY-SA 4.0 License"]
         ],
         main: "readme",
         source_url: @repo_url,

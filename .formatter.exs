@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
 locals_without_parens = [field: 2, field: 3, plugin: 1, plugin: 2]
 
 [

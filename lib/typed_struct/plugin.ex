@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2019-2022 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-FileCopyrightText: 2022 Jonathan Chukinas <chukinas@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule TypedStruct.Plugin do
   @moduledoc """
   This module defines the plugin interface for TypedStruct.

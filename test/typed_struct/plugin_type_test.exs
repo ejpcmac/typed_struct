@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2022 Jonathan Chukinas <chukinas@gmail.com>
+# SPDX-FileCopyrightText: 2022 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule TypedStruct.PluginEnvTest do
   @moduledoc """
   Test the the env argument in the field/4 plugin callback.

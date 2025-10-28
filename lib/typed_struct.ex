@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2018-2022, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+# SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
+# SPDX-FileCopyrightText: 2022 Jonathan Chukinas <chukinas@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule TypedStruct do
   @external_resource "README.md"
   @moduledoc "README.md"

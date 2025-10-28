@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2018, 2020, 2022 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -7,6 +12,12 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Fixed
+
+* Ensure the second argument to `field/2` is a type ([#45]).
+
+[#45]: https://github.com/ejpcmac/typed_struct/issues/45
 
 ## [0.3.0] - 2022-02-15
 
