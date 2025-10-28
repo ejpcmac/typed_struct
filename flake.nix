@@ -143,6 +143,13 @@
                   ++ commitCheckToolchain;
               };
 
+              ci-reuse = {
+                name = "typed_struct CI with reuse";
+
+                packages =
+                  reuseToolchain;
+              };
+
               ci-formatters = {
                 name = "typed_struct CI with formatters";
 
