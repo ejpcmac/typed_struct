@@ -24,22 +24,25 @@ end
     {:committed, "elixir scripts/check_commits.exs",
      order: 1, enabled: enabled?.("commits")},
 
+    # REUSE compliance
+    {:reuse, "reuse lint", order: 2, enabled: enabled?.("reuse")},
+
     # Formatters
-    {:typos, "typos", order: 2, enabled: enabled?.("format")},
+    {:typos, "typos", order: 3, enabled: enabled?.("format")},
     {:eclint, "eclint -exclude {#{Enum.join(eclint_excluded_files, ",")}}",
-     order: 3, enabled: enabled?.("format")},
-    {:nixpkgs_fmt, "nixpkgs-fmt --check .",
      order: 4, enabled: enabled?.("format")},
-    {:taplo, "taplo fmt --check", order: 5, enabled: enabled?.("format")},
-    {:prettier, "prettier --check .", order: 6, enabled: enabled?.("format")},
-    {:formatter, order: 7, enabled: enabled?.("format")},
+    {:nixpkgs_fmt, "nixpkgs-fmt --check .",
+     order: 5, enabled: enabled?.("format")},
+    {:taplo, "taplo fmt --check", order: 6, enabled: enabled?.("format")},
+    {:prettier, "prettier --check .", order: 7, enabled: enabled?.("format")},
+    {:formatter, order: 8, enabled: enabled?.("format")},
 
     # Checks
     {:unused_deps, "mix deps.unlock --check-unused",
-     order: 8, enabled: enabled?.("checks")},
-    {:credo, order: 9, enabled: enabled?.("checks")},
-    {:ex_unit, "mix test --trace", order: 10, enabled: enabled?.("checks")},
-    {:ex_doc, order: 11, enabled: enabled?.("docs")},
-    {:dialyzer, order: 12, enabled: enabled?.("checks")}
+     order: 9, enabled: enabled?.("checks")},
+    {:credo, order: 10, enabled: enabled?.("checks")},
+    {:ex_unit, "mix test --trace", order: 11, enabled: enabled?.("checks")},
+    {:ex_doc, order: 12, enabled: enabled?.("docs")},
+    {:dialyzer, order: 13, enabled: enabled?.("checks")}
   ]
 ]
