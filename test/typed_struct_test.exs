@@ -87,6 +87,61 @@ defmodule TypedStructTest do
              }
   end
 
+  test "keeps the `@typedoc` if it exists" do
+    assert extract_t_typedoc(TestStruct.SimpleTypedoc) == %{
+             "en" => "A typed struct"
+           }
+  end
+
+  test "adds field descriptions to the `@typedoc` if it exists" do
+    assert extract_t_typedoc(TestStruct.DetailedTypedoc) == %{
+             "en" => """
+             A typed struct
+
+             ## Fields
+
+             - `a_string` - just a series of letters
+             - `an_int` - some digits
+             """
+           }
+  end
+
+  test "does not create a `@typedoc` if there is none" do
+    module = TestStruct.NoTypedoc
+
+    # HACK: To check the absence of @typedoc with `Code.fetch_docs/1`, we need
+    # that the module is compiled to a beam file on disk. We could put the
+    # struct in `test/support/test_struct.ex` along with other test structs,
+    # however this would emit a warning at compile time, which we want to avoid.
+    # Let’s then compile the file here while capturing the I/O to suppress the
+    # warning.
+    #
+    # NOTE: The emission of the warning is tested in a following test.
+    capture_io(:stderr, fn ->
+      File.rm("_build/test/lib/typed_struct/ebin/#{module}.beam")
+      Code.put_compiler_option(:docs, true)
+      [{_, bin}] = Code.compile_file("test/data/test_struct/no_typedoc.ex")
+      File.write!("_build/test/lib/typed_struct/ebin/#{module}.beam", bin)
+    end)
+
+    assert extract_t_typedoc(module) == :none
+  end
+
+  test "prints a warning if `:doc` is set but there is no `@typedoc`" do
+    assert capture_io(
+             :stderr,
+             fn ->
+               defmodule FieldDocWithoutTypeDoc do
+                 use TypedStruct
+
+                 typedstruct do
+                   field :field, term(), doc: "Just a field"
+                 end
+               end
+             end
+           ) =~ "adding field documentation has no effect without a @typedoc"
+  end
+
   ############################################################################
   ##                                Problems                                ##
   ############################################################################
@@ -196,4 +251,17 @@ defmodule TypedStructTest do
 
   defp standardise(list, struct) when is_list(list),
     do: Enum.map(list, &standardise(&1, struct))
+
+  # Extracts the `@typedoc` for type `t()` in `module`.
+  defp extract_t_typedoc(module) do
+    {:docs_v1, _, :elixir, _, _, _,
+     [
+       _,
+       _,
+       {{:type, :t, _}, _, _, typedoc, _}
+     ]} =
+      Code.fetch_docs(module)
+
+    typedoc
+  end
 end

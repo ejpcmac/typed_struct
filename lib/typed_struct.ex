@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2018-2022, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
 # SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
 # SPDX-FileCopyrightText: 2022 Jonathan Chukinas <chukinas@gmail.com>
+# SPDX-FileCopyrightText: 2022 Balázs Jávorszky <javorszky.balazs@estyle.hu>
 #
 # SPDX-License-Identifier: MIT
 
@@ -16,6 +17,7 @@ defmodule TypedStruct do
     :ts_plugin_fields,
     :ts_fields,
     :ts_types,
+    :ts_docs,
     :ts_enforce_keys
   ]
 
@@ -116,7 +118,43 @@ defmodule TypedStruct do
       @enforce_keys @ts_enforce_keys
       defstruct @ts_fields
 
+      TypedStruct.__typedoc__(@ts_docs)
       TypedStruct.__type__(@ts_types, unquote(opts))
+    end
+  end
+
+  @doc false
+  defmacro __typedoc__(docs) do
+    quote bind_quoted: [docs: docs] do
+      field_docs =
+        docs
+        |> Enum.reverse()
+        |> Enum.filter(fn {_, doc} -> !is_nil(doc) end)
+        |> Enum.map(fn {name, doc} -> "- `#{name}` - #{doc}" end)
+
+      if field_docs != [] do
+        # If there are field docs, we complete the `@typedoc` with field
+        # documentation. However, if there is no `@typedoc` already, let’s emit
+        # a warning instead.
+        if Module.has_attribute?(__MODULE__, :typedoc) do
+          @typedoc """
+          #{@typedoc}
+
+          ## Fields
+
+          #{Enum.join(field_docs, "\n")}
+          """
+        else
+          IO.warn(
+            """
+            adding field documentation has no effect without a @typedoc
+
+            hint: add a @typedoc on your `typedstruct` definition
+            """,
+            Macro.Env.stacktrace(__ENV__)
+          )
+        end
+      end
     end
   end
 
@@ -174,6 +212,7 @@ defmodule TypedStruct do
     * `default` - sets the default value for the field
     * `enforce` - if set to true, enforces the field and makes its type
       non-nullable
+    * `doc` - description for the field to be added to the `@typedoc`
   """
   defmacro field(name, type, opts \\ []) do
     quote bind_quoted: [name: name, type: Macro.escape(type), opts: opts] do
@@ -208,6 +247,7 @@ defmodule TypedStruct do
     Module.put_attribute(mod, :ts_fields, {name, opts[:default]})
     Module.put_attribute(mod, :ts_plugin_fields, {name, type, opts, env})
     Module.put_attribute(mod, :ts_types, {name, type_for(type, nullable?)})
+    Module.put_attribute(mod, :ts_docs, {name, opts[:doc]})
     if enforce?, do: Module.put_attribute(mod, :ts_enforce_keys, name)
   end
 

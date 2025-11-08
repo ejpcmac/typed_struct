@@ -203,6 +203,30 @@ typedstruct do
 end
 ```
 
+You can also document individual fields:
+
+```elixir
+typedstruct do
+  @typedoc "A typed struct"
+
+  field :a_string, String.t(), doc: "just a series of letters"
+  field :an_int, integer(), doc: "some explanation"
+end
+```
+
+This generate the following `@typedoc`:
+
+```elixir
+@typedoc """
+A typed struct
+
+## Fields
+
+- `a_string` - just a series of letters
+- `an_int` - some digits
+"""
+```
+
 You can also document submodules this way:
 
 ```elixir
