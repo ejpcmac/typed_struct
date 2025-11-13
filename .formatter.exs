@@ -1,7 +1,14 @@
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
-locals_without_parens = [field: 2, field: 3, parameter: 1, plugin: 1, plugin: 2]
+locals_without_parens = [
+  field: 2,
+  field: 3,
+  parameter: 1,
+  parameter: 2,
+  plugin: 1,
+  plugin: 2
+]
 
 [
   inputs: [

@@ -17,9 +17,10 @@ defmodule TypedStruct do
     :ts_plugins,
     :ts_plugin_fields,
     :ts_parameters,
+    :ts_parameter_docs,
     :ts_fields,
     :ts_types,
-    :ts_docs,
+    :ts_field_docs,
     :ts_enforce_keys
   ]
 
@@ -132,7 +133,7 @@ defmodule TypedStruct do
       @enforce_keys @ts_enforce_keys
       defstruct @ts_fields
 
-      TypedStruct.__typedoc__(@ts_docs)
+      TypedStruct.__typedoc__(@ts_parameter_docs, @ts_field_docs)
 
       TypedStruct.__type__(
         Enum.reverse(@ts_parameters),
@@ -143,30 +144,37 @@ defmodule TypedStruct do
   end
 
   @doc false
-  defmacro __typedoc__(docs) do
-    quote bind_quoted: [docs: docs] do
-      field_docs =
-        docs
+  defmacro __typedoc__(parameter_docs, field_docs) do
+    quote bind_quoted: [
+            parameter_docs: parameter_docs,
+            field_docs: field_docs
+          ] do
+      parameter_docs =
+        parameter_docs
         |> Enum.reverse()
         |> Enum.filter(fn {_, doc} -> !is_nil(doc) end)
-        |> Enum.map(fn {name, doc} -> "- `#{name}` - #{doc}" end)
+        |> Enum.map_join("\n", fn {name, doc} -> "- `#{name}` - #{doc}" end)
+        |> TypedStruct.__add_heading__("Type parameters")
 
-      if field_docs != [] do
+      field_docs =
+        field_docs
+        |> Enum.reverse()
+        |> Enum.filter(fn {_, doc} -> !is_nil(doc) end)
+        |> Enum.map_join("\n", fn {name, doc} -> "- `#{name}` - #{doc}" end)
+        |> TypedStruct.__add_heading__("Fields")
+
+      if parameter_docs != "" || field_docs != "" do
         # If there are field docs, we complete the `@typedoc` with field
         # documentation. However, if there is no `@typedoc` already, let’s emit
         # a warning instead.
         if Module.has_attribute?(__MODULE__, :typedoc) do
           @typedoc """
-          #{@typedoc}
-
-          ## Fields
-
-          #{Enum.join(field_docs, "\n")}
+          #{@typedoc}#{parameter_docs}#{field_docs}
           """
         else
           IO.warn(
             """
-            adding field documentation has no effect without a @typedoc
+            adding parameter or field documentation has no effect without a @typedoc
 
             hint: add a @typedoc on your `typedstruct` definition
             """,
@@ -176,6 +184,10 @@ defmodule TypedStruct do
       end
     end
   end
+
+  @doc false
+  def __add_heading__("", _heading), do: ""
+  def __add_heading__(doc, heading), do: "\n\n## #{heading}\n\n#{doc}"
 
   @doc false
   defmacro __type__(parameters, types, opts) do
@@ -235,18 +247,19 @@ defmodule TypedStruct do
         field :a_field, type_param
       end
   """
-  defmacro parameter(name) do
-    quote bind_quoted: [name: name] do
-      TypedStruct.__parameter__(name, __ENV__)
+  defmacro parameter(name, opts \\ []) do
+    quote bind_quoted: [name: name, opts: opts] do
+      TypedStruct.__parameter__(name, opts, __ENV__)
     end
   end
 
   @doc false
-  def __parameter__(name, %Macro.Env{module: mod}) when is_atom(name) do
+  def __parameter__(name, opts, %Macro.Env{module: mod}) when is_atom(name) do
     Module.put_attribute(mod, :ts_parameters, Macro.var(name, mod))
+    Module.put_attribute(mod, :ts_parameter_docs, {name, opts[:doc]})
   end
 
-  def __parameter__(name, _env) do
+  def __parameter__(name, _opts, _env) do
     raise ArgumentError,
           "the name of a type parameter must be an atom, got #{inspect(name)}"
   end
@@ -299,7 +312,7 @@ defmodule TypedStruct do
     Module.put_attribute(mod, :ts_fields, {name, opts[:default]})
     Module.put_attribute(mod, :ts_plugin_fields, {name, type, opts, env})
     Module.put_attribute(mod, :ts_types, {name, type_for(type, nullable?)})
-    Module.put_attribute(mod, :ts_docs, {name, opts[:doc]})
+    Module.put_attribute(mod, :ts_field_docs, {name, opts[:doc]})
     if enforce?, do: Module.put_attribute(mod, :ts_enforce_keys, name)
   end
 

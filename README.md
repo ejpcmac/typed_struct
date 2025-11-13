@@ -229,14 +229,17 @@ typedstruct do
 end
 ```
 
-You can also document individual fields:
+You can also document individual type parameters and fields:
 
 ```elixir
 typedstruct do
   @typedoc "A typed struct"
 
+  parameter :state, doc: "type for the `:state` field"
+
   field :a_string, String.t(), doc: "just a series of letters"
   field :an_int, integer(), doc: "some explanation"
+  field :state, state, doc: "the current state"
 end
 ```
 
@@ -245,6 +248,10 @@ This generate the following `@typedoc`:
 ```elixir
 @typedoc """
 A typed struct
+
+## Type parameters
+
+- `state` - type for the `:state` field
 
 ## Fields
 

@@ -110,10 +110,41 @@ defmodule TypedStructTest do
            }
   end
 
-  test "adds field descriptions to the `@typedoc` if it exists" do
-    assert extract_t_typedoc(TestStruct.DetailedTypedoc) == %{
+  test "adds type parameter descriptions to the `@typedoc` if it exists" do
+    assert extract_t_typedoc(TestStruct.ParametersTypedoc) == %{
              "en" => """
              A typed struct
+
+             ## Type parameters
+
+             - `string` - the string type of your choice
+             - `int` - the integer type of your choice
+             """
+           }
+  end
+
+  test "adds field descriptions to the `@typedoc` if it exists" do
+    assert extract_t_typedoc(TestStruct.FieldsTypedoc) == %{
+             "en" => """
+             A typed struct
+
+             ## Fields
+
+             - `a_string` - just a series of letters
+             - `an_int` - some digits
+             """
+           }
+  end
+
+  test "adds both parameter and field descriptions to the `@typedoc`" do
+    assert extract_t_typedoc(TestStruct.ParametersAndFieldsTypedoc) == %{
+             "en" => """
+             A typed struct
+
+             ## Type parameters
+
+             - `string` - the string type of your choice
+             - `int` - the integer type of your choice
 
              ## Fields
 
@@ -144,7 +175,24 @@ defmodule TypedStructTest do
     assert extract_t_typedoc(module) == :none
   end
 
-  test "prints a warning if `:doc` is set but there is no `@typedoc`" do
+  test "prints a warning if `:doc` is set on a parameter but there is no `@typedoc`" do
+    assert capture_io(
+             :stderr,
+             fn ->
+               defmodule ParameterDocWithoutTypeDoc do
+                 use TypedStruct
+
+                 typedstruct do
+                   parameter :type, doc: "the type of the field"
+                   field :field, type
+                 end
+               end
+             end
+           ) =~
+             "adding parameter or field documentation has no effect without a @typedoc"
+  end
+
+  test "prints a warning if `:doc` is set on a field but there is no `@typedoc`" do
     assert capture_io(
              :stderr,
              fn ->
@@ -152,11 +200,12 @@ defmodule TypedStructTest do
                  use TypedStruct
 
                  typedstruct do
-                   field :field, term(), doc: "Just a field"
+                   field :field, term(), doc: "just a field"
                  end
                end
              end
-           ) =~ "adding field documentation has no effect without a @typedoc"
+           ) =~
+             "adding parameter or field documentation has no effect without a @typedoc"
   end
 
   ############################################################################

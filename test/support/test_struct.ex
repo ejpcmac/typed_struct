@@ -137,9 +137,25 @@ defmodule TypedStruct.TestStruct do
     end
   end
 
-  defmodule DetailedTypedoc do
+  defmodule ParametersTypedoc do
     @moduledoc """
-    A typed struct with a `@typedoc`.
+    A typed struct with a `@typedoc` and type parameter docs.
+    """
+    use TypedStruct
+
+    @typedoc "A typed struct"
+    typedstruct do
+      parameter :string, doc: "the string type of your choice"
+      parameter :int, doc: "the integer type of your choice"
+
+      field :a_string, string
+      field :an_int, int
+    end
+  end
+
+  defmodule FieldsTypedoc do
+    @moduledoc """
+    A typed struct with a `@typedoc` and field docs.
     """
     use TypedStruct
 
@@ -147,6 +163,22 @@ defmodule TypedStruct.TestStruct do
     typedstruct do
       field :a_string, String.t(), doc: "just a series of letters"
       field :an_int, integer(), doc: "some digits"
+    end
+  end
+
+  defmodule ParametersAndFieldsTypedoc do
+    @moduledoc """
+    A typed struct with a `@typedoc` and both parameter and field docs
+    """
+    use TypedStruct
+
+    @typedoc "A typed struct"
+    typedstruct do
+      parameter :string, doc: "the string type of your choice"
+      parameter :int, doc: "the integer type of your choice"
+
+      field :a_string, string, doc: "just a series of letters"
+      field :an_int, int, doc: "some digits"
     end
   end
 
