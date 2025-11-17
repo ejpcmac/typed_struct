@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2018, 2020, 2022, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
 # SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
+# SPDX-FileCopyrightText: 2022 Phil Chen <06fahchen@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -79,6 +80,22 @@ defmodule TypedStructTest do
     assert type1 == type2
   end
 
+  test "generates a parameterized type for the struct" do
+    # Get both types and standardise them (remove line numbers and rename
+    # the second struct with the name of the first one).
+    type1 =
+      TestStruct.WithParameter
+      |> extract_first_type()
+      |> standardise(TestStruct.WithParameter)
+
+    type2 =
+      TestStruct.WithParameter.Expected
+      |> extract_first_type()
+      |> standardise(TestStruct.WithParameter.Expected)
+
+    assert type1 == type2
+  end
+
   test "generates the struct in a submodule if `module: ModuleName` is set" do
     # credo:disable-for-next-line Credo.Check.Design.AliasUsage
     assert TestStruct.AsSubmodule.Struct.__struct__() ==
@@ -93,10 +110,41 @@ defmodule TypedStructTest do
            }
   end
 
-  test "adds field descriptions to the `@typedoc` if it exists" do
-    assert extract_t_typedoc(TestStruct.DetailedTypedoc) == %{
+  test "adds type parameter descriptions to the `@typedoc` if it exists" do
+    assert extract_t_typedoc(TestStruct.ParametersTypedoc) == %{
              "en" => """
              A typed struct
+
+             ## Type parameters
+
+             - `string` - the string type of your choice
+             - `int` - the integer type of your choice
+             """
+           }
+  end
+
+  test "adds field descriptions to the `@typedoc` if it exists" do
+    assert extract_t_typedoc(TestStruct.FieldsTypedoc) == %{
+             "en" => """
+             A typed struct
+
+             ## Fields
+
+             - `a_string` - just a series of letters
+             - `an_int` - some digits
+             """
+           }
+  end
+
+  test "adds both parameter and field descriptions to the `@typedoc`" do
+    assert extract_t_typedoc(TestStruct.ParametersAndFieldsTypedoc) == %{
+             "en" => """
+             A typed struct
+
+             ## Type parameters
+
+             - `string` - the string type of your choice
+             - `int` - the integer type of your choice
 
              ## Fields
 
@@ -127,7 +175,24 @@ defmodule TypedStructTest do
     assert extract_t_typedoc(module) == :none
   end
 
-  test "prints a warning if `:doc` is set but there is no `@typedoc`" do
+  test "prints a warning if `:doc` is set on a parameter but there is no `@typedoc`" do
+    assert capture_io(
+             :stderr,
+             fn ->
+               defmodule ParameterDocWithoutTypeDoc do
+                 use TypedStruct
+
+                 typedstruct do
+                   parameter :type, doc: "the type of the field"
+                   field :field, type
+                 end
+               end
+             end
+           ) =~
+             "adding parameter or field documentation has no effect without a @typedoc"
+  end
+
+  test "prints a warning if `:doc` is set on a field but there is no `@typedoc`" do
     assert capture_io(
              :stderr,
              fn ->
@@ -135,11 +200,12 @@ defmodule TypedStructTest do
                  use TypedStruct
 
                  typedstruct do
-                   field :field, term(), doc: "Just a field"
+                   field :field, term(), doc: "just a field"
                  end
                end
              end
-           ) =~ "adding field documentation has no effect without a @typedoc"
+           ) =~
+             "adding parameter or field documentation has no effect without a @typedoc"
   end
 
   ############################################################################
@@ -161,6 +227,21 @@ defmodule TypedStructTest do
                end
              end
            end) =~ "undefined function field/2"
+  end
+
+  test "the name of a type parameter must be an atom" do
+    assert_raise ArgumentError,
+                 "the name of a type parameter must be an atom, got 3",
+                 fn ->
+                   defmodule InvalidStruct do
+                     use TypedStruct
+
+                     typedstruct do
+                       parameter 3
+                       field :field, term()
+                     end
+                   end
+                 end
   end
 
   test "the name of a field must be an atom" do
@@ -237,14 +318,20 @@ defmodule TypedStructTest do
   defp standardise({:type, _, type, params}, struct),
     do: {:type, :line, type, standardise(params, struct)}
 
+  defp standardise({:user_type, _, type, params}, struct),
+    do: {:user_type, :line, type, standardise(params, struct)}
+
   defp standardise({:remote_type, _, params}, struct),
     do: {:remote_type, :line, standardise(params, struct)}
 
   defp standardise({:atom, _, struct}, struct),
     do: {:atom, :line, TestStruct}
 
+  defp standardise({:var, _, name}, _),
+    do: {:var, :line, name}
+
   defp standardise({name, type, params}, struct) when is_tuple(type),
-    do: {name, standardise(type, struct), params}
+    do: {name, standardise(type, struct), standardise(params, struct)}
 
   defp standardise({type, _, literal}, _struct),
     do: {type, :line, literal}

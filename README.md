@@ -175,6 +175,32 @@ defmodule MyOpaqueStruct do
 end
 ```
 
+You can add type parameters:
+
+```elixir
+defmodule User do
+  use TypedStruct
+
+  typedstruct do
+    # Define a type parameter with the `parameter` macro.
+    parameter :state
+
+    # You can then use it here as `state`.
+    field :state, state, enforce: true
+    field :name, String.t()
+  end
+end
+```
+
+And use them like this:
+
+```elixir
+@type user_state() :: :registered | :confirmed | :logged_in
+
+@spec get_user_state(User.t(user_state())) :: user_state()
+def get_user_state(%User{state, _name}), do: state
+```
+
 If you often define submodules containing only a struct, you can avoid
 boilerplate code:
 
@@ -203,14 +229,17 @@ typedstruct do
 end
 ```
 
-You can also document individual fields:
+You can also document individual type parameters and fields:
 
 ```elixir
 typedstruct do
   @typedoc "A typed struct"
 
+  parameter :state, doc: "type for the `:state` field"
+
   field :a_string, String.t(), doc: "just a series of letters"
   field :an_int, integer(), doc: "some explanation"
+  field :state, state, doc: "the current state"
 end
 ```
 
@@ -219,6 +248,10 @@ This generate the following `@typedoc`:
 ```elixir
 @typedoc """
 A typed struct
+
+## Type parameters
+
+- `state` - type for the `:state` field
 
 ## Fields
 
@@ -380,8 +413,27 @@ generates the following type:
 
 ```elixir
 @opaque t() :: %__MODULE__{
-          name: String.t()
+          name: String.t() | nil
         }
+```
+
+When you specify parameters with the `parameter/1` macro, they are used in the
+definition of the type:
+
+```elixir
+typedstruct do
+  parameter :param
+
+  field :field, param
+end
+```
+
+gives the following type:
+
+```elixir
+@type t(param) :: %__MODULE__{
+        field: param | nil
+      }
 ```
 
 When passing `module: ModuleName`, the whole `typedstruct` block is wrapped in a

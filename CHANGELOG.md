@@ -15,6 +15,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+* Add support for type parameters (by [@fahchen](https://github.com/fahchen/)).
 * Add a `:doc` option to `field/3` to add field-specific descriptions in the
     `@typedoc` (by [@javobalazs](https://github.com/javobalazs)).
 

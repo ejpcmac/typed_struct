@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2018, 2020, 2025 Jean-Philippe Cugnet <jean-philippe@cugnet.eu>
 # SPDX-FileCopyrightText: 2018 Marcin Górnik <marcin.gornik@gmail.com>
+# SPDX-FileCopyrightText: 2022 Phil Chen <06fahchen@gmail.com>
 # SPDX-FileCopyrightText: 2023 Serge Aleynikov <saleyn@gmail.com>
 #
 # SPDX-License-Identifier: MIT
@@ -82,6 +83,37 @@ defmodule TypedStruct.TestStruct do
     end
   end
 
+  defmodule WithParameter do
+    @moduledoc """
+    A struct with a parameterised type.
+    """
+    use TypedStruct
+
+    typedstruct do
+      parameter :t1
+      parameter :t2
+
+      field :field_t1, t1
+      field :field_t2, t2
+      field :enforced_field_t1, t1, enforce: true
+    end
+
+    defmodule Expected do
+      @moduledoc """
+      `WithParameter` but defined manually.
+      """
+
+      @enforce_keys [:enforced_field_t1]
+      defstruct [:field_t1, :field_t2, :enforced_field_t1]
+
+      @type t(t1, t2) :: %__MODULE__{
+              field_t1: t1 | nil,
+              field_t2: t2 | nil,
+              enforced_field_t1: t1
+            }
+    end
+  end
+
   defmodule AsSubmodule do
     @moduledoc """
     A struct defined as a submodule.
@@ -105,9 +137,25 @@ defmodule TypedStruct.TestStruct do
     end
   end
 
-  defmodule DetailedTypedoc do
+  defmodule ParametersTypedoc do
     @moduledoc """
-    A typed struct with a `@typedoc`.
+    A typed struct with a `@typedoc` and type parameter docs.
+    """
+    use TypedStruct
+
+    @typedoc "A typed struct"
+    typedstruct do
+      parameter :string, doc: "the string type of your choice"
+      parameter :int, doc: "the integer type of your choice"
+
+      field :a_string, string
+      field :an_int, int
+    end
+  end
+
+  defmodule FieldsTypedoc do
+    @moduledoc """
+    A typed struct with a `@typedoc` and field docs.
     """
     use TypedStruct
 
@@ -115,6 +163,22 @@ defmodule TypedStruct.TestStruct do
     typedstruct do
       field :a_string, String.t(), doc: "just a series of letters"
       field :an_int, integer(), doc: "some digits"
+    end
+  end
+
+  defmodule ParametersAndFieldsTypedoc do
+    @moduledoc """
+    A typed struct with a `@typedoc` and both parameter and field docs
+    """
+    use TypedStruct
+
+    @typedoc "A typed struct"
+    typedstruct do
+      parameter :string, doc: "the string type of your choice"
+      parameter :int, doc: "the integer type of your choice"
+
+      field :a_string, string, doc: "just a series of letters"
+      field :an_int, int, doc: "some digits"
     end
   end
 
