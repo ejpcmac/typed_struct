@@ -49,51 +49,15 @@ defmodule TypedStructTest do
   end
 
   test "generates a type for the struct" do
-    # Get both types and standardise them (remove line numbers and rename
-    # the second struct with the name of the first one).
-    type1 =
-      TestStruct.BaseFeatures
-      |> extract_first_type()
-      |> standardise(TestStruct.BaseFeatures)
-
-    type2 =
-      TestStruct.BaseFeatures.Expected
-      |> extract_first_type()
-      |> standardise(TestStruct.BaseFeatures.Expected)
-
-    assert type1 == type2
+    assert_type_is_expected(TestStruct.BaseFeatures)
   end
 
   test "generates an opaque type if `opaque: true` is set" do
-    # Get both types and standardise them (remove line numbers and rename
-    # the second struct with the name of the first one).
-    type1 =
-      TestStruct.Opaque
-      |> extract_first_type(:opaque)
-      |> standardise(TestStruct.Opaque)
-
-    type2 =
-      TestStruct.Opaque.Expected
-      |> extract_first_type(:opaque)
-      |> standardise(TestStruct.Opaque.Expected)
-
-    assert type1 == type2
+    assert_type_is_expected(TestStruct.Opaque, :opaque)
   end
 
   test "generates a parameterized type for the struct" do
-    # Get both types and standardise them (remove line numbers and rename
-    # the second struct with the name of the first one).
-    type1 =
-      TestStruct.WithParameter
-      |> extract_first_type()
-      |> standardise(TestStruct.WithParameter)
-
-    type2 =
-      TestStruct.WithParameter.Expected
-      |> extract_first_type()
-      |> standardise(TestStruct.WithParameter.Expected)
-
-    assert type1 == type2
+    assert_type_is_expected(TestStruct.WithParameter)
   end
 
   test "generates the struct in a submodule if `module: ModuleName` is set" do
@@ -284,27 +248,35 @@ defmodule TypedStructTest do
   end
 
   test "aliases are properly resolved in types" do
-    # Get both types and standardise them (remove line numbers and rename
-    # the second struct with the name of the first one).
-    type1 =
-      TestStruct.Alias.With
-      |> extract_first_type()
-      |> standardise(TestStruct.Alias.With)
-
-    type2 =
-      TestStruct.Alias.Without
-      |> extract_first_type()
-      |> standardise(TestStruct.Alias.Without)
-
-    assert type1 == type2
+    assert_type_eq(TestStruct.Alias.With, TestStruct.Alias.Without)
   end
 
   ############################################################################
   ##                                Helpers                                 ##
   ############################################################################
 
+  # Asserts `module.t()` is equivalent to `module.Expected.t()`.
+  defp assert_type_is_expected(module, type_keyword \\ :type) do
+    assert_type_eq(module, Module.concat([module, Expected]), type_keyword)
+  end
+
+  # Asserts the type from `module1` is equivalent to the one in `module2`.
+  defp assert_type_eq(module1, module2, type_keyword \\ :type) do
+    type1 =
+      module1
+      |> extract_first_type(type_keyword)
+      |> standardise(module1)
+
+    type2 =
+      module2
+      |> extract_first_type(type_keyword)
+      |> standardise(module2)
+
+    assert type1 == type2
+  end
+
   # Extracts the first type from a module.
-  defp extract_first_type(bytecode, type_keyword \\ :type) do
+  defp extract_first_type(bytecode, type_keyword) do
     case Code.Typespec.fetch_types(bytecode) do
       {:ok, types} -> Keyword.get(types, type_keyword)
       _ -> nil
